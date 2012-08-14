@@ -17,8 +17,9 @@ public class Folder extends FolderItem {
 	public String folderKey;
 	public String name;
 	public boolean isFolder = true;
-	public int subFoldersCount = 0;
-	public int filesCount = 0;
+	public int folderCount = 0;
+	public int fileCount = 0;
+	private boolean fullImport = false;
 
 	public Folder(Cursor cur) {
 		createFolderFromCursor(cur);
@@ -35,16 +36,17 @@ public class Folder extends FolderItem {
 		parent = cur.getString(cur.getColumnIndex(Columns.Items.PARENT));
 		created = cur.getString(cur.getColumnIndex(Columns.Items.CREATED));
 		inserted = cur.getLong(cur.getColumnIndex(Columns.Items.INSERTED));
-		subFoldersCount = cur.getInt(cur.getColumnIndex(Columns.Folders.FOLDERS));
-		filesCount = cur.getInt(cur.getColumnIndex(Columns.Folders.FILES));
+		folderCount = cur.getInt(cur.getColumnIndex(Columns.Folders.FOLDERS));
+		fileCount = cur.getInt(cur.getColumnIndex(Columns.Folders.FILES));
 	}
 
 	public void updateDb(SQLiteDatabase db, boolean fullImport) {
 		Log.d(TAG, "Updating db");
 		if (fullImport) {
+			this.fullImport = true;
 			Mediabase.truncateTables(db);
 		}
-		insertFolderInDb(db, this);
+		insertFolderInDb(db, this, true);
 
 	}
 
@@ -79,23 +81,33 @@ public class Folder extends FolderItem {
 		return folderItems;
 	}
 
-	private void insertFolderInDb(SQLiteDatabase db, Folder folder) {
+	private void insertFolderInDb(SQLiteDatabase db, Folder folder, boolean isRoot) {
+		Log.d(TAG, "Delete folders in " + folder + " first");
+		db.execSQL("DELETE FROM " + Mediabase.TABLE_FOLDERS + " WHERE  " + Columns.Folders.FOLDERKEY + " IN( SELECT  " + Columns.Items.KEY
+				+ " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + " = '" + folder.folderKey + "' OR "
+				+ Columns.Items.PARENT + " = '" + folder.folderKey + "')");
+		Log.d(TAG, "Delete files in " + folder + " first");
+		db.execSQL("DELETE FROM " + Mediabase.TABLE_FILES + " WHERE  " + Columns.Files.QUICKKEY + " IN( SELECT  " + Columns.Items.KEY
+				+ " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + " = '" + folder.folderKey + "' OR "
+				+ Columns.Items.PARENT + " = '" + folder.folderKey + "')");
+		Log.d(TAG, "Delete items in " + folder + " first");
+		db.execSQL("DELETE FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + " = '" + folder.folderKey + "' OR "
+				+ Columns.Items.PARENT + " = '" + folder.folderKey + "'");
+
 		Log.d(TAG, "Inserting folder " + folder.descr() + " in database");
-		Log.d(TAG, "Inserting folder " + folder + " in items");
+		long now = (isRoot || folder.folderKey == Folder.ROOT_KEY) ? System.currentTimeMillis() / 1000 : 0;
+
 		db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
 				+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
-				+ Columns.Items.CREATED + ", " + Columns.Items.INSERTED + ")" + " VALUES (?,?,?,?,?,?,?,?)", new Object[] {
-				folder.folderKey, FolderItem.TYPE_FOLDER, folder.parent, folder.name, folder.desc, folder.tags, folder.created,
-				folder.inserted });
-
-		Log.d(TAG, "Inserting folder " + folder + " in folders");
+				+ Columns.Items.CREATED + ", " + Columns.Items.INSERTED + ")" + " VALUES (?,?,?,?,?,?,?, ?)", new Object[] {
+				folder.folderKey, FolderItem.TYPE_FOLDER, folder.parent, folder.name, folder.desc, folder.tags, folder.created, now });
 		db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FOLDERS + "(" + Columns.Folders.FOLDERKEY + "," + Columns.Folders.FOLDERS
 				+ "," + Columns.Folders.FILES + ")" + " VALUES (?,?,?)", new Object[] { folder.folderKey, folder.subFolders.size(),
-				folder.filesCount });
+				folder.fileCount });
 
 		for (Iterator<Folder> it = folder.subFolders.iterator(); it.hasNext();) {
 			Folder f = it.next();
-			insertFolderInDb(db, f);
+			insertFolderInDb(db, f, fullImport);
 		}
 		for (Iterator<File> it = folder.files.iterator(); it.hasNext();) {
 			File f = it.next();
@@ -111,21 +123,19 @@ public class Folder extends FolderItem {
 
 	private void insertFileInDb(SQLiteDatabase db, File file) {
 		Log.d(TAG, "Inserting file " + file + " in database");
-		Log.d(TAG, "Inserting file " + file + " in items");
 		db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
 				+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
-				+ Columns.Items.CREATED + ", " + Columns.Items.INSERTED + " )" + " VALUES (?,?,?,?,?,?,?,?)", new Object[] { file.quickkey,
-				FolderItem.TYPE_FILE, file.parent, file.filename, file.desc, file.tags, file.created, System.currentTimeMillis() / 1000 });
+				+ Columns.Items.CREATED + " )" + " VALUES (?,?,?,?,?,?,?)", new Object[] { file.quickkey, FolderItem.TYPE_FILE,
+				file.parent, file.filename, file.desc, file.tags, file.created });
 
-		Log.d(TAG, "Inserting file " + file + " in files");
 		db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FILES + "(" + Columns.Files.QUICKKEY + "," + Columns.Files.DOWNLOADS + ","
 				+ Columns.Files.SIZE + ")" + " VALUES (?,?,?)", new Object[] { file.quickkey, file.downloads, file.size });
 
 	}
 
 	private String getNumOfItems(Folder folder) {
-		int folders = folder.subFoldersCount > 0 ? folder.subFoldersCount : folder.subFolders.size();
-		int files = folder.filesCount > 0 ? folder.filesCount : folder.files.size();
+		int folders = folder.folderCount > 0 ? folder.folderCount : folder.subFolders.size();
+		int files = folder.fileCount > 0 ? folder.fileCount : folder.files.size();
 		String[] r = new String[2];
 		if (files == 0 && folders == 0) {
 			return "(Empty)";

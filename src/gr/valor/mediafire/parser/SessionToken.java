@@ -33,6 +33,8 @@ public class SessionToken extends JSONParser implements Elements {
 			if (result.equals(SUCCESS) && action.equals(GET_SESSION_TOKEN_ACTION)) {
 				sessionToken = response.getString(SESSION_TOKEN);
 				Log.d(TAG, "session token " + sessionToken);
+			} else {
+				sessionToken = null;
 			}
 
 		} catch (JSONException e) {

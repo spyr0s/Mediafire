@@ -13,15 +13,15 @@ public abstract class JSONParser implements Elements {
 
 	public abstract void parse() throws JSONException;
 
-	public boolean checkAction(String action) throws JSONException {
+	public boolean checkAction(String act) throws JSONException {
 		JSONObject obj = new JSONObject(jsonString);
 		response = obj.getJSONObject(RESPONSE);
 		action = response.getString(ACTION);
 		result = response.getString(RESULT);
-		if (result.equals(SUCCESS) && action.equals(action)) {
+		if (result.equals(SUCCESS) && act.equals(action)) {
 			return true;
 		}
-		return false;
+		throw new JSONException("Wrong action " + action + " instead of requested " + act);
 	}
 
 	public String getStringValue(JSONObject obj, String name) throws JSONException {

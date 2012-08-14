@@ -5,13 +5,16 @@ public interface Elements {
 	String LOGIN_TOKEN = "login_token";
 	String SESSION_TOKEN = "session_token";
 	String GET_SESSION_TOKEN_ACTION = "user/get_session_token";
+	String GET_FOLDER_CONTENT_ACTION = "folder/get_content";
 	String SUCCESS = "Success";
 	String RESULT = "result";
 	String RESPONSE = "response";
 	String MYFILES = "myfiles";
 	String FOLDERCONTENT = "folder_content";
+
 	String FOLDERS = "folders";
 	String FILE_COUNT = "file_count";
+	String FOLDER_COUNT = "folder_count";
 	String PARENT_FOLDERKEY = "parent_folderkey";
 	String PRIVACY = "privacy";
 	String FOLDER = "folder";

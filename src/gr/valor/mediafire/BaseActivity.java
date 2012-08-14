@@ -39,14 +39,16 @@ public abstract class BaseActivity extends Activity {
 			mediafire.removePref(Mediafire.PASSWORD_PREF_NAME);
 			mediafire.setEmail(null);
 			mediafire.setPassword(null);
+			mediafire.setSessionToken(null);
+			mediafire.setSessionTokenCreationTime(0);
 			intent = new Intent(this, LoginActivity.class);
 			startActivity(intent);
 			break;
 		case R.id.menu_full_import:
 			Log.d(TAG, "Calling menu Full import");
+			mediafire.setCurrentFolder(Folder.createRootFolder());
+			mediafire.setFullImport(true);
 			intent = new Intent(this, FolderActivity.class);
-			intent.putExtra(FolderActivity.FOLDERKEY, Folder.ROOT_KEY);
-			intent.putExtra(FolderActivity.FULL_IMPORT, true);
 			startActivity(intent);
 			break;
 

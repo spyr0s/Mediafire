@@ -28,7 +28,11 @@ public class LoginActivity extends BaseActivity {
 		Log.d(TAG, "Creating activity");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
-		checkCredentials();
+		if (!mediafire.isOnline()) {
+			showFolders();
+		} else {
+			checkCredentials();
+		}
 	}
 
 	private void checkCredentials() {
@@ -70,6 +74,10 @@ public class LoginActivity extends BaseActivity {
 
 	public void doLogin(View view) {
 		EditText et_email = (EditText) findViewById(R.id.login_username);
+		if (!Helper.isValidEmail(et_email.getText().toString())) {
+			Toast.makeText(this, "This is not a valid email address", Toast.LENGTH_SHORT).show();
+			return;
+		}
 		EditText et_password = (EditText) findViewById(R.id.login_password);
 		CheckBox cb_remember = (CheckBox) findViewById(R.id.login_remember);
 		mediafire.setEmail(et_email.getText().toString());
@@ -82,13 +90,9 @@ public class LoginActivity extends BaseActivity {
 		String email = mediafire.getEmail();
 		String password = mediafire.getPassword();
 		Connection connection = new Connection(this);
-		if (mediafire.isOnline()) {
-			Log.d(TAG, "Getting session token for " + email + " " + password);
-			LoginTask session = new LoginTask(email, password, this, connection);
-			session.execute();
-		} else {
-			showFolders();
-		}
+		Log.d(TAG, "Getting session token for " + email + " " + password);
+		LoginTask session = new LoginTask(email, password, this, connection);
+		session.execute();
 	}
 
 	public void doOffline(View view) {
@@ -124,7 +128,7 @@ class LoginTask extends AsyncTask<String, Void, String> implements ApiUrls {
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		this.d.setMessage("Login in...");
+		this.d.setMessage("Logging you in...");
 		this.d.show();
 	}
 
@@ -134,7 +138,7 @@ class LoginTask extends AsyncTask<String, Void, String> implements ApiUrls {
 		super.onPostExecute(result);
 		if (result == null || result.equals("null")) {
 			Log.d(TAG, "Wrong credentials");
-			Toast.makeText(LoginTask.this.activity, "Could not log you in", Toast.LENGTH_SHORT).show();
+			Toast.makeText(this.activity, "Wrong username or password", Toast.LENGTH_LONG).show();
 		} else {
 			Log.d(TAG, "Setting credentials");
 			activity.mediafire.setSessionToken(result);

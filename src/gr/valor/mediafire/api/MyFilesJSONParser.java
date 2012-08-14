@@ -29,8 +29,11 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 	}
 
 	public void parse() throws JSONException {
-		if (!checkAction(GET_SESSION_TOKEN_ACTION)) {
-			throw new JSONException("Wrong action");
+		try {
+			checkAction(GET_FOLDER_CONTENT_ACTION);
+		} catch (JSONException e) {
+			Log.w(TAG, e.getMessage());
+			throw e;
 		}
 		folder.name = FolderItem.ROOT_NAME;
 		folder.folderKey = FolderItem.ROOT_KEY;
@@ -41,12 +44,14 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 
 			for (int i = 0; i < folders.length(); i++) {
 				JSONObject f = (JSONObject) folders.get(i);
+				Log.d("XML", f.toString());
 				Folder cFolder = new Folder();
 				cFolder.name = getStringValue(f, NAME);
 				cFolder.created = getStringValue(f, CREATED);
 				cFolder.desc = getStringValue(f, DESC);
 				cFolder.tags = getStringValue(f, TAGS);
-				cFolder.filesCount = f.getInt(FILE_COUNT);
+				cFolder.fileCount = f.getInt(FILE_COUNT);
+				cFolder.folderCount = f.getInt(FOLDER_COUNT);
 				cFolder.folderKey = getStringValue(f, FOLDERKEY);
 				cFolder.isFolder = true;
 				cFolder.parent = getStringValue(f, PARENT_FOLDERKEY, FolderItem.ROOT_KEY);
@@ -60,7 +65,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 			files = folderContent.getJSONArray(FILES);
 			for (int i = 0; i < files.length(); i++) {
 				JSONObject f = (JSONObject) files.get(i);
-				Log.d(TAG, f.toString());
+				Log.d("XML", f.toString());
 				File file = new File();
 				file.created = getStringValue(f, CREATED);
 				file.desc = getStringValue(f, DESC);

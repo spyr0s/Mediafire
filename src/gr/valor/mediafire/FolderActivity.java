@@ -371,10 +371,11 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			try {
 				Mediabase mb = new Mediabase(activity);
 				SQLiteDatabase db = mb.getWritableDatabase();
-				result.updateDb(db, fullImport);
+				result.updateDb(db, mediafire.isFullImport());
 				getOfflineFolderItems();
 				db.close();
 				createList();
+				mediafire.setFullImport(false);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

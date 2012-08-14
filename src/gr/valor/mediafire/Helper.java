@@ -66,4 +66,12 @@ public class Helper {
 		return sign;
 	}
 
+	public static boolean isValidEmail(CharSequence target) {
+		try {
+			return android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
+		} catch (NullPointerException exception) {
+			return false;
+		}
+	}
+
 }
