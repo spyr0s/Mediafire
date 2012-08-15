@@ -104,12 +104,16 @@ public class Mediafire extends Application {
 		} else {
 			Mediabase m = new Mediabase(this);
 			SQLiteDatabase db = m.getReadableDatabase();
+			Folder f = Folder.createRootFolder();
 			try {
-				return Folder.getByFolderKey(db, Folder.ROOT_KEY);
+				f = Folder.getByFolderKey(db, Folder.ROOT_KEY);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				return Folder.createRootFolder();
+				e.printStackTrace();
 			}
+			db.close();
+			return f;
+
 		}
 	}
 

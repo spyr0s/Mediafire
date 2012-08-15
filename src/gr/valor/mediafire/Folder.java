@@ -186,4 +186,20 @@ public class Folder extends FolderItem {
 		return System.currentTimeMillis() / 1000 - this.inserted < cacheDuration;
 
 	}
+
+	public String getFullPath(SQLiteDatabase db) {
+		String path = this.name;
+		try {
+			Folder f = Folder.getByFolderKey(db, this.parent);
+			while (f.parent != null) {
+				path = f.name + "/" + path;
+				f = Folder.getByFolderKey(db, f.parent);
+			}
+			path = f.name + "/" + path;
+		} catch (Exception e) {
+			return path;
+		}
+		return path;
+
+	}
 }

@@ -6,7 +6,6 @@ import gr.valor.mediafire.api.MyFilesJSONParser;
 import gr.valor.mediafire.api.MyOfflineFiles;
 import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.helpers.FileIcon;
-import gr.valor.mediafire.helpers.Helper;
 import gr.valor.mediafire.helpers.SwipeInterface;
 import gr.valor.mediafire.parser.Elements;
 
@@ -28,7 +27,6 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
@@ -42,15 +40,11 @@ import android.widget.TextView;
 
 public class FolderActivity extends BaseActivity implements SwipeInterface {
 	private static final String TAG = "FolderActivity";
-	private static final int SWIPE_MIN_DISTANCE = 120;
-	private static final int SWIPE_MAX_OFF_PATH = 250;
-	private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 	public static final String FOLDERKEY = "gr.valor.mediafire.FOLDERKEY";
 	public static final String ONLINE = "gr.valor.mediafire.ONLINE";
 	public static final String EMPTY_DB = "gr.valor.mediafire.EMPTY_DB";
 	public static final String FULL_IMPORT = "gr.valor.mediafire.FULL_IMPORT";
 	public Folder folder;
-	public ArrayList<String> path = new ArrayList<String>();
 
 	private static final String[] FOLDER_FROM = { Folder.TYPE, Folder.NAME, Folder.CREATED, File.DOWNLOADS, File.SIZE };
 	private static final int[] FOLDER_TO = { R.id.folder_item_type, R.id.folder_item_name, R.id.folder_item_created,
@@ -59,10 +53,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	SimpleAdapter folderAdapter;
 	private int folderResource = R.layout.folder_item;
 
-	private GestureDetector gestureDetector;
 	View.OnTouchListener gestureListener;
-	private boolean fullImport;
-	private boolean online;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -143,10 +134,12 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		} else {
 			h.setVisibility(View.VISIBLE);
 		}
+		Mediabase m = new Mediabase(this);
 		setTitle("Mediafire - " + mediafire.getCurrentFolder().name);
-		path.add(mediafire.getCurrentFolder().name);
-		((TextView) findViewById(R.id.listView_title)).setText(Helper.implode(path, "/"));
-
+		SQLiteDatabase db = m.getReadableDatabase();
+		String path = mediafire.getCurrentFolder().getFullPath(db);
+		((TextView) findViewById(R.id.listView_title)).setText(path);
+		db.close();
 		createAdapter();
 		populateList();
 	}
@@ -195,8 +188,6 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			Mediabase mb = new Mediabase(this);
 			SQLiteDatabase db = mb.getReadableDatabase();
 			try {
-				path.remove(path.size() - 1);
-				path.remove(path.size() - 1);
 				mediafire.setCurrentFolder(Folder.getByFolderKey(db, mediafire.getCurrentFolder().parent));
 				createOfflineList();
 			} catch (Exception e) {
