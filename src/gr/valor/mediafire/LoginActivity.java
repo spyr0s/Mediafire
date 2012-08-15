@@ -24,6 +24,16 @@ public class LoginActivity extends BaseActivity {
 		} else {
 			checkCredentials();
 		}
+
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (mediafire.isCloseApp()) {
+			mediafire.setCloseApp(false);
+			this.finish();
+		}
 	}
 
 	private void checkCredentials() {
@@ -41,12 +51,6 @@ public class LoginActivity extends BaseActivity {
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
-		checkCredentials();
-	}
-
-	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_login, menu);
 		return true;
@@ -54,13 +58,21 @@ public class LoginActivity extends BaseActivity {
 
 	public void autoLogin() {
 		Log.d(TAG, "Auto login");
-		if (mediafire.isTokenValid()) {
-			Log.d(TAG, "Valid token show folders");
-			showFolders();
-		} else {
+		boolean validToken = false;
+		try {
+			validToken = mediafire.isTokenValid();
+			if (validToken) {
+				Log.d(TAG, "Valid token show folders");
+				showFolders();
+			} else {
+				Log.d(TAG, "Not valid token - login");
+				login();
+			}
+		} catch (Exception e) {
 			Log.d(TAG, "Not valid token - login");
 			login();
 		}
+
 	}
 
 	public void doLogin(View view) {
@@ -92,6 +104,7 @@ public class LoginActivity extends BaseActivity {
 	}
 
 	void showFolders() {
+		Log.d(TAG, "Show folders activity starts");
 		Intent intent = new Intent(this, FolderActivity.class);
 		startActivity(intent);
 	}

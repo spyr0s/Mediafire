@@ -10,4 +10,5 @@ public interface ApiUrls {
 	String GET_SESSION_TOKEN_URL = "user/get_session_token.php";
 	String MYFILES_URL = "folder/get_content.php";
 	String MYFILES_REVISION_URL = "user/myfiles-revision.php";
+	String RENEW_SESSION_TOKEN_URL = "user/renew_session_token.php";
 }

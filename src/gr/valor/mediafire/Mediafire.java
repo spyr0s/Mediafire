@@ -2,8 +2,12 @@ package gr.valor.mediafire;
 
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.database.Mediabase;
+
+import java.util.concurrent.ExecutionException;
+
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -12,12 +16,13 @@ public class Mediafire extends Application {
 	public static final String EMAIL_PREF_NAME = "emailPref";
 	public static final String PASSWORD_PREF_NAME = "passwordPref";
 	public static final int TOKEN_LIFETIME = 600;
+	public static final String CLOSE_APP = "closeApplication";
 	private boolean isLoggedIn = false;
 	private String email = null;
 	private String password = null;
 	private boolean rememberMe = false;
 	private String sessionToken = null;
-	private Folder currentFolder = Folder.createRootFolder();
+	private Folder currentFolder;
 	private boolean fullImport = false;
 	private boolean online = false;
 	private boolean onWifi = false;
@@ -28,6 +33,7 @@ public class Mediafire extends Application {
 	private long sessionTokenCreationTime = 0L;
 	private long cacheDuration = 0L;
 	private SharedPreferences prefs;
+	private boolean closeApp;
 
 	@Override
 	public void onCreate() {
@@ -54,9 +60,14 @@ public class Mediafire extends Application {
 
 	}
 
-	public Long getLongPref(String prefName, long def) {
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		return prefs.getLong(prefName, def);
+	public int getIntPref(String prefName, int def) {
+		prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+		String v = prefs.getString(prefName, "");
+		try {
+			return v.equals("") ? def : Integer.parseInt(v);
+		} catch (NumberFormatException e) {
+			return def;
+		}
 
 	}
 
@@ -79,7 +90,7 @@ public class Mediafire extends Application {
 		this.sessionTokenCreationTime = sessionTokenCreationTime;
 	}
 
-	public boolean isLoggedIn() {
+	public boolean isLoggedIn() throws Exception {
 		return isTokenValid();
 	}
 
@@ -88,7 +99,18 @@ public class Mediafire extends Application {
 	}
 
 	public Folder getCurrentFolder() {
-		return currentFolder;
+		if (currentFolder != null) {
+			return currentFolder;
+		} else {
+			Mediabase m = new Mediabase(this);
+			SQLiteDatabase db = m.getReadableDatabase();
+			try {
+				return Folder.getByFolderKey(db, Folder.ROOT_KEY);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				return Folder.createRootFolder();
+			}
+		}
 	}
 
 	public void setCurrentFolder(Folder currentFolder) {
@@ -127,17 +149,37 @@ public class Mediafire extends Application {
 		this.allowGsm = allowGsm;
 	}
 
-	public boolean isTokenValid() {
+	public boolean isTokenValid() throws Exception {
 		if (getSessionToken() == null) {
 			Log.d(TAG, "Token is null. Need to login");
-			return false;
+			throw new Exception("Null Token");
 		}
 		if (System.currentTimeMillis() / 1000 - getSessionTokenCreationTime() < TOKEN_LIFETIME) {
 			Log.d(TAG, "A valid token");
 			return true;
 		}
 		Log.d(TAG, "Renewing token");
-		return LoginTask.renew();
+		return renewSession();
+	}
+
+	private boolean renewSession() {
+		String email = getEmail();
+		String password = getPassword();
+		Connection connection = new Connection(this);
+		Log.d(TAG, "Getting session token for " + email + " " + password);
+		RenewTokenTask session = new RenewTokenTask(this, connection);
+		session.execute();
+		try {
+			return session.get() != null;
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public String getEmail() {
@@ -184,7 +226,22 @@ public class Mediafire extends Application {
 	 * @return the cacheDuration
 	 */
 	public long getCacheDuration() {
-		return getLongPref(getString(R.string.pref_cacheKey), 0L);
+		return getIntPref(getString(R.string.pref_cacheKey), 0);
+	}
+
+	/**
+	 * @param closeApp
+	 *            the closeApp to set
+	 */
+	public void setCloseApp(boolean closeApp) {
+		this.closeApp = closeApp;
+	}
+
+	/**
+	 * @return the closeApp
+	 */
+	public boolean isCloseApp() {
+		return closeApp;
 	}
 
 }

@@ -21,6 +21,7 @@ import java.util.Map;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
@@ -87,7 +88,14 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			if (mediafire.getCurrentFolder().isCached(mediafire.getCacheDuration())) {
 				createCachedList();
 			} else {
-				if (!mediafire.isTokenValid()) {
+				boolean validToken = false;
+				try {
+					validToken = mediafire.isTokenValid();
+				} catch (Exception e) {
+					Intent login = new Intent(this, LoginActivity.class);
+					startActivity(login);
+				}
+				if (!validToken) {
 					if (mediafire.isFullImport()) {
 						mediafire.setCurrentFolder(Folder.createRootFolder());
 						createOfflineList();
@@ -170,21 +178,33 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	@Override
 	public void onBackPressed() {
 		if (mediafire.getCurrentFolder().folderKey.equals(Folder.ROOT_KEY)) {
-			super.onBackPressed();
-			return;
-		}
-		Mediabase mb = new Mediabase(this);
-		SQLiteDatabase db = mb.getReadableDatabase();
-		try {
-			path.remove(path.size() - 1);
-			path.remove(path.size() - 1);
-			mediafire.setCurrentFolder(Folder.getByFolderKey(db, mediafire.getCurrentFolder().parent));
-			createOfflineList();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			db.close();
+			AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+			alertDialog.setTitle("Exit Application?");
+			alertDialog.setMessage("Do you want to exit the application?");
+			alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					Log.d(TAG, "Exiting app");
+					mediafire.setCloseApp(true);
+					FolderActivity.this.finish();
+				}
+			});
+			alertDialog.show();
+		} else {
+			Mediabase mb = new Mediabase(this);
+			SQLiteDatabase db = mb.getReadableDatabase();
+			try {
+				path.remove(path.size() - 1);
+				path.remove(path.size() - 1);
+				mediafire.setCurrentFolder(Folder.getByFolderKey(db, mediafire.getCurrentFolder().parent));
+				createOfflineList();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				db.close();
+			}
 		}
 
 	}
@@ -361,7 +381,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			this.dialog.setMessage("Fetching folders and files...");
+			this.dialog.setMessage("Fetching " + mediafire.getCurrentFolder().name + "...");
 			this.dialog.show();
 		}
 
