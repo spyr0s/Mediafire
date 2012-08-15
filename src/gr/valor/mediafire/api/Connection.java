@@ -1,7 +1,7 @@
 package gr.valor.mediafire.api;
 
-import gr.valor.mediafire.Helper;
 import gr.valor.mediafire.R;
+import gr.valor.mediafire.helpers.Helper;
 import gr.valor.mediafire.parser.Elements;
 
 import java.io.BufferedInputStream;

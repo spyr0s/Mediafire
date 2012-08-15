@@ -14,7 +14,7 @@ public class MyOfflineFiles extends MyFiles {
 	private final static String TAG = "MyOfflineFiles";
 	private SQLiteDatabase db;
 	private String parent;
-	private final String ORDER = "ORDER BY type DESC";
+	private final String ORDER = "ORDER BY " + Columns.Items.TYPE + " DESC, " + Columns.Items.NAME + " ASC";
 
 	public MyOfflineFiles(Context context, SQLiteDatabase db) {
 		this.context = context;
@@ -26,7 +26,7 @@ public class MyOfflineFiles extends MyFiles {
 		String sql = "SELECT " + Columns.Folders.FOLDERKEY + ", " + Columns.Items.NAME + ", " + Columns.Items.TYPE + ", "
 				+ Columns.Items.PARENT + ", " + Columns.Items.CREATED + ", " + Columns.Folders.FOLDERS + ", " + Columns.Folders.FILES
 				+ ", " + Columns.Items.INSERTED + " FROM " + Mediabase.TABLE_ITEMS + " i " + " LEFT JOIN " + Mediabase.TABLE_FOLDERS
-				+ " fo" + " ON i." + Columns.Items.KEY + " = fo." + Columns.Folders.FOLDERKEY + " WHERE " + Columns.Items.KEY + " = ?;";
+				+ " fo" + " ON i." + Columns.Items.KEY + " = fo." + Columns.Folders.FOLDERKEY + " WHERE " + Columns.Items.KEY + " = ? ;";
 		Cursor cur = db.rawQuery(sql, new String[] { parent });
 		if (cur.getCount() != 1) {
 			throw new Exception("Root folder not found in database");

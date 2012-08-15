@@ -2,6 +2,7 @@ package gr.valor.mediafire;
 
 import gr.valor.mediafire.database.Columns;
 import gr.valor.mediafire.database.Mediabase;
+import gr.valor.mediafire.helpers.Helper;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -178,10 +179,11 @@ public class Folder extends FolderItem {
 		return f;
 	}
 
-	public boolean isCached() {
-		Log.d(TAG, "now:" + System.currentTimeMillis() / 1000);
-		Log.d(TAG, "ins: " + this.inserted);
-		return System.currentTimeMillis() / 1000 - this.inserted < 7200;
+	public boolean isCached(long cacheDuration) {
+		Log.d(TAG, "Checking for cached folder in cache dur:" + cacheDuration);
+		Log.d(TAG, "now:" + (System.currentTimeMillis() / 1000) + "-" + this.inserted + " = "
+				+ (System.currentTimeMillis() / 1000 - this.inserted));
+		return System.currentTimeMillis() / 1000 - this.inserted < cacheDuration;
 
 	}
 }

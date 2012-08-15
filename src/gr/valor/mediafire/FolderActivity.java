@@ -6,6 +6,7 @@ import gr.valor.mediafire.api.MyFilesJSONParser;
 import gr.valor.mediafire.api.MyOfflineFiles;
 import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.helpers.FileIcon;
+import gr.valor.mediafire.helpers.Helper;
 import gr.valor.mediafire.helpers.SwipeInterface;
 import gr.valor.mediafire.parser.Elements;
 
@@ -83,7 +84,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 				showAlertDialog();
 			}
 		} else {
-			if (mediafire.getCurrentFolder().isCached()) {
+			if (mediafire.getCurrentFolder().isCached(mediafire.getCacheDuration())) {
 				createCachedList();
 			} else {
 				if (!mediafire.isTokenValid()) {

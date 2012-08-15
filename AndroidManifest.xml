@@ -26,6 +26,7 @@
             android:name=".FolderActivity"
             android:label="@string/title_activity_folder" >
         </activity>
+        <activity android:label="Preferences" android:name="PrefsActivity"></activity>
     </application>
 
 </manifest>

@@ -31,7 +31,7 @@ public abstract class BaseActivity extends Activity {
 		switch (item.getItemId()) {
 		case R.id.menu_settings:
 			Log.d(TAG, "Calling menu Preferences");
-			// startActivity(new Intent(this, PrefsActivity.class));
+			startActivity(new Intent(this, PrefsActivity.class));
 			break;
 		case R.id.menu_logout:
 			Log.d(TAG, "Calling menu Logout");

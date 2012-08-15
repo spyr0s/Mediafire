@@ -4,11 +4,11 @@ import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.database.Mediabase;
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class Mediafire extends Application {
 	public static final String TAG = "Mediafire";
-	public static final String LOGIN_PREFS_NAME = "loginPrefs";
 	public static final String EMAIL_PREF_NAME = "emailPref";
 	public static final String PASSWORD_PREF_NAME = "passwordPref";
 	public static final int TOKEN_LIFETIME = 600;
@@ -26,17 +26,20 @@ public class Mediafire extends Application {
 	private boolean allowGsm = false;
 	private boolean tokenValid = false;
 	private long sessionTokenCreationTime = 0L;
+	private long cacheDuration = 0L;
+	private SharedPreferences prefs;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		setEmail(getStringPref(EMAIL_PREF_NAME, null));
 		setPassword(getStringPref(PASSWORD_PREF_NAME, null));
+
 	}
 
 	public void saveCredentials() {
-		SharedPreferences settings = getSharedPreferences(LOGIN_PREFS_NAME, 0);
-		SharedPreferences.Editor editor = settings.edit();
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		SharedPreferences.Editor editor = prefs.edit();
 		if (rememberMe) {
 			Log.d(TAG, "Saving credentials");
 			editor.putString(EMAIL_PREF_NAME, getEmail());
@@ -46,14 +49,20 @@ public class Mediafire extends Application {
 	}
 
 	public String getStringPref(String prefName, String def) {
-		SharedPreferences settings = getSharedPreferences(Mediafire.LOGIN_PREFS_NAME, 0);
-		return settings.getString(prefName, def);
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		return prefs.getString(prefName, def);
+
+	}
+
+	public Long getLongPref(String prefName, long def) {
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		return prefs.getLong(prefName, def);
 
 	}
 
 	public void removePref(String pref) {
-		SharedPreferences settings = getSharedPreferences(LOGIN_PREFS_NAME, 0);
-		SharedPreferences.Editor editor = settings.edit();
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		SharedPreferences.Editor editor = prefs.edit();
 		editor.remove(pref);
 		editor.commit();
 	}
@@ -120,11 +129,14 @@ public class Mediafire extends Application {
 
 	public boolean isTokenValid() {
 		if (getSessionToken() == null) {
+			Log.d(TAG, "Token is null. Need to login");
 			return false;
 		}
 		if (System.currentTimeMillis() / 1000 - getSessionTokenCreationTime() < TOKEN_LIFETIME) {
+			Log.d(TAG, "A valid token");
 			return true;
 		}
+		Log.d(TAG, "Renewing token");
 		return LoginTask.renew();
 	}
 
@@ -158,6 +170,21 @@ public class Mediafire extends Application {
 
 	public void setSessionToken(String sessionToken) {
 		this.sessionToken = sessionToken;
+	}
+
+	/**
+	 * @param cacheDuration
+	 *            the cacheDuration to set
+	 */
+	public void setCacheDuration(long cacheDuration) {
+		this.cacheDuration = cacheDuration;
+	}
+
+	/**
+	 * @return the cacheDuration
+	 */
+	public long getCacheDuration() {
+		return getLongPref(getString(R.string.pref_cacheKey), 0L);
 	}
 
 }

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="pref_preferences">Preferences</string>
+  <string name="pref_cache">Cache duration</string>
+  <string name="pref_cacheSum">Duration of caching the folders list</string>
+  <string name="pref_cacheDialog">Folders cache duration</string>
+  <string name="pref_cacheKey">cacheDurationKey</string>
+  <string-array name="pref_cache">
+    <item>No Cache</item>
+    <item>1 minute</item>
+    <item>5 minutes</item>
+    <item>1 hour</item>
+    <item>12 hours</item>
+    <item>1 day</item>
+    <item>Forever</item>
+  </string-array>
+  <string-array name="pref_freqValues">
+    <item>0</item>
+    <item>60</item>
+    <item>300</item>
+    <item>3600</item>
+    <item>43200</item>
+    <item>86400</item>
+    <item>31536000</item>
+  </string-array>
+</resources>
