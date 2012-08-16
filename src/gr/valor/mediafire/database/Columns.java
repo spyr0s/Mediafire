@@ -3,6 +3,10 @@ package gr.valor.mediafire.database;
 import android.provider.BaseColumns;
 
 public class Columns {
+	public static final String YES = "yes";
+	public static final String NO = "no";
+	public static final String PUBLIC = "public";
+	public static final String PRIVATE = "private";
 
 	public static final class Items implements BaseColumns {
 		public static final String KEY = "key";
@@ -13,6 +17,8 @@ public class Columns {
 		public static final String TAGS = "tags";
 		public static final String CREATED = "created";
 		public static final String INSERTED = "inserted";
+		public static final String FLAG = "flag";
+		public static final String PRIVACY = "privacy";
 
 		private Items() {
 		}
@@ -23,6 +29,10 @@ public class Columns {
 		public static final String FOLDERKEY = "folderkey";
 		public static final String FOLDERS = "folders";
 		public static final String FILES = "files";
+		public static final String SHARED = "shared";
+		public static final String REVISION = "revision";
+		public static final String EPOCH = "epoch";
+		public static final String DROPBOX_ENABLED = "dropbox_enabled";
 
 		private Folders() {
 		}
@@ -33,6 +43,8 @@ public class Columns {
 		public static final String QUICKKEY = "quickkey";
 		public static final String DOWNLOADS = "downloads";
 		public static final String SIZE = "size";
+		public static final String FILETYPE = "filetype";
+		public static final String PASSWORD_PROTECTED = "password_protected";
 
 		private Files() {
 		}

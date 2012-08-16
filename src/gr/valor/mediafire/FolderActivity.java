@@ -211,14 +211,12 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	}
 
 	private void getOnlineFolderItems() {
-		Log.d(TAG, "Connecting to get files");
 		Connection connection = new Connection(this);
 		MyOnlineFilesTask onlineFiles = new MyOnlineFilesTask(this, connection);
 		onlineFiles.execute(new Folder[] { mediafire.getCurrentFolder() });
 	}
 
 	private void getOfflineFolderItems() {
-		Log.d(TAG, "Getting files from db");
 		Mediabase mb = new Mediabase(this);
 		SQLiteDatabase db = mb.getReadableDatabase();
 
@@ -254,7 +252,6 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	}
 
 	private void populateList() {
-		Log.d(TAG, "Populating the list");
 		ListView listFolders = (ListView) findViewById(R.id.listView_items);
 		listFolders.setAdapter(folderAdapter);
 		listFolders.setOnItemClickListener(new ListItemListener());
@@ -303,7 +300,6 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 					img = img.replaceAll(" ", "").toLowerCase();
 					FileIcon icon = new FileIcon(img, FolderActivity.this);
 					int r = icon.getIcon();
-					Log.d(TAG, "CUSTOM ICON" + textRepresentation + " resource " + r);
 					if (r == 0) {
 						d = res.getDrawable(R.drawable.icon_file);
 						im.setImageDrawable(d);
@@ -417,7 +413,6 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 					if (in == null) {
 						Log.e(TAG, "Could not read from " + GET_LOGIN_TOKEN_URL);
 					}
-					Log.d(TAG, "Starting my files parser");
 
 					StringBuilder builder = new StringBuilder();
 					BufferedReader reader = new BufferedReader(new InputStreamReader(in));

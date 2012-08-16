@@ -1,6 +1,7 @@
 package gr.valor.mediafire.parser;
 
 public interface Elements {
+	// ACTIONS
 	String ACTION = "action";
 	String LOGIN_TOKEN = "login_token";
 	String SESSION_TOKEN = "session_token";
@@ -10,14 +11,22 @@ public interface Elements {
 	String RESULT = "result";
 	String RESPONSE = "response";
 	String MYFILES = "myfiles";
-	String FOLDERCONTENT = "folder_content";
 
+	// FOLDER CONTENT
+	String FOLDERCONTENT = "folder_content";
 	String FOLDERS = "folders";
 	String FILE_COUNT = "file_count";
 	String FOLDER_COUNT = "folder_count";
 	String PARENT_FOLDERKEY = "parent_folderkey";
 	String PRIVACY = "privacy";
 	String FOLDER = "folder";
+	String FLAG = "flag";
+	String SHARED = "shared";
+	String REVISION = "revision";
+	String EPOCH = "epoch";
+	String DROPBOX_ENABLED = "dropbox_enabled";
+	String FILETYPE = "filetype";
+	String PASSWORD_PROTECTED = "password_protected";
 	String FOLDERKEY = "folderkey";
 	String NAME = "name";
 	String DESC = "description";

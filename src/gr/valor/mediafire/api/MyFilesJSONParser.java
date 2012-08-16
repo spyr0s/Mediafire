@@ -44,12 +44,19 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 
 			for (int i = 0; i < folders.length(); i++) {
 				JSONObject f = (JSONObject) folders.get(i);
+				JSONObject rev = f.getJSONObject(REVISION);
 				Log.d("XML", f.toString());
 				Folder cFolder = new Folder();
 				cFolder.name = getStringValue(f, NAME);
 				cFolder.created = getStringValue(f, CREATED);
 				cFolder.desc = getStringValue(f, DESC);
 				cFolder.tags = getStringValue(f, TAGS);
+				cFolder.flag = f.getInt(FLAG);
+				cFolder.revision = rev.getInt(REVISION);
+				cFolder.epoch = rev.getLong(EPOCH);
+				cFolder.privacy = getStringValue(f, PRIVACY);
+				cFolder.dropboxEnabled = getStringValue(f, DROPBOX_ENABLED);
+				cFolder.shared = getStringValue(f, SHARED);
 				cFolder.fileCount = f.getInt(FILE_COUNT);
 				cFolder.folderCount = f.getInt(FOLDER_COUNT);
 				cFolder.folderKey = getStringValue(f, FOLDERKEY);
@@ -71,7 +78,11 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 				file.desc = getStringValue(f, DESC);
 				file.downloads = f.getInt(DOWNLOADS);
 				file.filename = getStringValue(f, FILENAME);
-				file.fileType = file.getFileType();
+				file.fileExtension = file.getFileExtension();
+				file.fileType = getStringValue(f, FILETYPE);
+				file.passwordProtected = getStringValue(f, PASSWORD_PROTECTED);
+				file.flag = f.getInt(FLAG);
+				file.privacy = getStringValue(f, PRIVACY);
 				file.isFolder = false;
 				file.parent = FolderItem.ROOT_KEY;
 				file.privacy = getStringValue(f, PRIVACY);

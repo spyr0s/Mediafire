@@ -9,7 +9,7 @@ import android.util.Log;
 public class Mediabase extends SQLiteOpenHelper {
 	public static final String TAG = "Mediabase";
 	public static final String DATABASE = "mediafire.db";
-	public static final int VERSION = 7;
+	public static final int VERSION = 1;
 	public static final String TABLE_ITEMS = "items";
 	public static final String TABLE_FOLDERS = "folders";
 	public static final String TABLE_FILES = "files";
@@ -18,7 +18,6 @@ public class Mediabase extends SQLiteOpenHelper {
 
 	public Mediabase(Context context) {
 		super(context, DATABASE, null, VERSION);
-		Log.d(TAG, "connecting to database " + DATABASE);
 	}
 
 	@Override
@@ -27,20 +26,22 @@ public class Mediabase extends SQLiteOpenHelper {
 		db.execSQL("CREATE TABLE `" + TABLE_ITEMS + "`" + "(`" + Columns.Items._ID
 				+ "` INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE ," + "`" + Columns.Items.KEY + "` VARCHAR NOT NULL  UNIQUE , "
 				+ "`" + Columns.Items.TYPE + "` VARCHAR, " + "`" + Columns.Items.PARENT + "` VARCHAR, " + "`" + Columns.Items.NAME
-				+ "` VARCHAR, " + "`" + Columns.Items.DESC + "` TEXT, " + "`" + Columns.Items.TAGS + "` TEXT, " + "`"
-				+ Columns.Items.CREATED + "` DATETIME, " + "`" + Columns.Items.INSERTED + "` INTEGER )");
+				+ "` VARCHAR, " + "`" + Columns.Items.DESC + "` TEXT, " + "`" + Columns.Items.TAGS + "` TEXT, " + "`" + Columns.Items.FLAG
+				+ "` INTEGER, " + "`" + Columns.Items.PRIVACY + "` TEXT, `" + Columns.Items.CREATED + "` DATETIME, " + "`"
+				+ Columns.Items.INSERTED + "` INTEGER )");
 
 		Log.d(TAG, "Creating table " + TABLE_FOLDERS);
 		db.execSQL("CREATE TABLE `" + TABLE_FOLDERS + "` " + "(`" + Columns.Folders._ID
 				+ "` INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , " + "`" + Columns.Folders.FOLDERKEY
-				+ "` VARCHAR NOT NULL  UNIQUE , " + "`" + Columns.Folders.FOLDERS + "` INTEGER DEFAULT 0, " + "`" + Columns.Folders.FILES
-				+ "` INTEGER DEFAULT 0)");
+				+ "` VARCHAR NOT NULL  UNIQUE , " + "`" + Columns.Folders.FOLDERS + "` INTEGER DEFAULT 0, " + "`" + Columns.Folders.SHARED
+				+ "` TEXT, " + "`" + Columns.Folders.REVISION + "` INTEGER, " + "`" + Columns.Folders.EPOCH + "` INTEGER, " + "`"
+				+ Columns.Folders.DROPBOX_ENABLED + "` TEXT, " + "`" + Columns.Folders.FILES + "` INTEGER DEFAULT 0)");
 
 		Log.d(TAG, "Creating table " + TABLE_FILES);
 		db.execSQL("CREATE TABLE `" + TABLE_FILES + "` " + "(`" + Columns.Files._ID
 				+ "` INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , " + "`" + Columns.Files.QUICKKEY
-				+ "` VARCHAR NOT NULL  UNIQUE , " + "`" + Columns.Files.DOWNLOADS + "` INTEGER DEFAULT 0, " + "`" + Columns.Files.SIZE
-				+ "` INTEGER DEFAULT 0)");
+				+ "` VARCHAR NOT NULL  UNIQUE , " + "`" + Columns.Files.FILETYPE + "` TEXT, " + "`" + Columns.Files.PASSWORD_PROTECTED
+				+ "` TEXT, " + "`" + Columns.Files.DOWNLOADS + "` INTEGER DEFAULT 0, " + "`" + Columns.Files.SIZE + "` INTEGER DEFAULT 0)");
 
 		Log.d(TAG, "Creating table " + TABLE_NOTES);
 		db.execSQL("CREATE TABLE `" + TABLE_NOTES + "` " + "(`" + Columns.Notes._ID

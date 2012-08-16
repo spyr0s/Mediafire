@@ -23,29 +23,21 @@ public class MyOfflineFiles extends MyFiles {
 
 	public Folder getFiles(String order) throws Exception {
 		Log.d(TAG, "Getting " + parent + " folder from db");
-		String sql = "SELECT " + Columns.Folders.FOLDERKEY + ", " + Columns.Items.NAME + ", " + Columns.Items.TYPE + ", "
-				+ Columns.Items.PARENT + ", " + Columns.Items.CREATED + ", " + Columns.Folders.FOLDERS + ", " + Columns.Folders.FILES
-				+ ", " + Columns.Items.INSERTED + " FROM " + Mediabase.TABLE_ITEMS + " i " + " LEFT JOIN " + Mediabase.TABLE_FOLDERS
-				+ " fo" + " ON i." + Columns.Items.KEY + " = fo." + Columns.Folders.FOLDERKEY + " WHERE " + Columns.Items.KEY + " = ? ;";
-		Cursor cur = db.rawQuery(sql, new String[] { parent });
-		if (cur.getCount() != 1) {
-			throw new Exception("Root folder not found in database");
-		}
-		cur.moveToFirst();
-		Folder currentFolder = new Folder(cur);
-		cur.close();
-
+		Folder currentFolder = Folder.getByFolderKey(db, parent);
 		if (order == null) {
 			order = ORDER;
 		}
 		Log.d(TAG, "Getting subitems from db");
-		sql = "SELECT " + Columns.Folders.FOLDERKEY + ", " + Columns.Files.QUICKKEY + ", " + Columns.Items.NAME + ", " + Columns.Items.TYPE
-				+ ", " + Columns.Items.PARENT + ", " + Columns.Items.CREATED + ", " + Columns.Folders.FOLDERS + ", "
-				+ Columns.Folders.FILES + ", " + Columns.Files.DOWNLOADS + ", " + Columns.Files.SIZE + ", " + Columns.Items.INSERTED
-				+ " FROM " + Mediabase.TABLE_ITEMS + " i " + " LEFT JOIN " + Mediabase.TABLE_FOLDERS + " fo" + " ON i." + Columns.Items.KEY
-				+ " = fo." + Columns.Folders.FOLDERKEY + " LEFT JOIN " + Mediabase.TABLE_FILES + " fi " + " ON i." + Columns.Items.KEY
-				+ " = fi." + Columns.Files.QUICKKEY + " WHERE " + Columns.Items.PARENT + " = ?" + order + ";";
-		cur = db.rawQuery(sql, new String[] { parent });
+		String sql = "SELECT " + Columns.Folders.FOLDERKEY + ", " + Columns.Files.QUICKKEY + ", " + Columns.Items.NAME + ", "
+				+ Columns.Items.TYPE + ", " + Columns.Items.PARENT + ", " + Columns.Items.CREATED + ", " + Columns.Folders.FOLDERS + ", "
+				+ Columns.Folders.FILES + ", " + Columns.Files.DOWNLOADS + ", " + Columns.Files.SIZE + ", " + Columns.Items.INSERTED + ", "
+				+ Columns.Items.FLAG + ", " + Columns.Items.PRIVACY + ", " + Columns.Folders.SHARED + ", " + Columns.Folders.REVISION
+				+ ", " + Columns.Folders.EPOCH + ", " + Columns.Folders.DROPBOX_ENABLED + ", " + Columns.Files.FILETYPE + ", "
+				+ Columns.Files.PASSWORD_PROTECTED + " FROM " + Mediabase.TABLE_ITEMS + " i " + " LEFT JOIN " + Mediabase.TABLE_FOLDERS
+				+ " fo" + " ON i." + Columns.Items.KEY + " = fo." + Columns.Folders.FOLDERKEY + " LEFT JOIN " + Mediabase.TABLE_FILES
+				+ " fi " + " ON i." + Columns.Items.KEY + " = fi." + Columns.Files.QUICKKEY + " WHERE " + Columns.Items.PARENT + " = ? "
+				+ order + ";";
+		Cursor cur = db.rawQuery(sql, new String[] { parent });
 		while (cur.moveToNext()) {
 			String type = cur.getString(cur.getColumnIndex(Columns.Items.TYPE));
 			if (type.equals(FolderItem.TYPE_FOLDER)) {

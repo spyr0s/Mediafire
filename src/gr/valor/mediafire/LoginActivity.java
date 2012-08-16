@@ -16,7 +16,6 @@ public class LoginActivity extends BaseActivity {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		Log.d(TAG, "Creating activity");
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
 		if (!mediafire.isOnline()) {
@@ -41,10 +40,8 @@ public class LoginActivity extends BaseActivity {
 			autoLogin();
 		} else {
 			if (mediafire.isEmptyDb()) {
-				Log.d(TAG, "Empty DB - hide offline button");
 				findViewById(R.id.login_offline).setVisibility(View.GONE);
 			} else {
-				Log.d(TAG, "Not Empty DB - show offline button");
 				findViewById(R.id.login_offline).setVisibility(View.VISIBLE);
 			}
 		}
@@ -93,7 +90,6 @@ public class LoginActivity extends BaseActivity {
 		String email = mediafire.getEmail();
 		String password = mediafire.getPassword();
 		Connection connection = new Connection(this);
-		Log.d(TAG, "Getting session token for " + email + " " + password);
 		LoginTask session = new LoginTask(email, password, this, connection);
 		session.execute();
 	}
@@ -104,7 +100,6 @@ public class LoginActivity extends BaseActivity {
 	}
 
 	void showFolders() {
-		Log.d(TAG, "Show folders activity starts");
 		Intent intent = new Intent(this, FolderActivity.class);
 		startActivity(intent);
 	}

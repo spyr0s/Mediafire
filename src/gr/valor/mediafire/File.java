@@ -5,19 +5,19 @@ import gr.valor.mediafire.database.Columns;
 import java.util.Map;
 
 import android.database.Cursor;
-import android.util.Log;
 
 public class File extends FolderItem {
 	private final static String TAG = "File";
-	public static final String TYPE_MUSIC = "mp3";
 	public String quickkey;
 	public String filename;
 	public int downloads;
 	public long size;
+	public String fileType;
+	public String passwordProtected;
 	public Note note;
 	public boolean isFolder = false;
 	protected Map<String, String> map;
-	public String fileType = FolderItem.TYPE_FILE;
+	public String fileExtension = FolderItem.TYPE_FILE;
 
 	private static final String[] Q = new String[] { "", "K", "M", "G", "T", "P", "E" };
 
@@ -37,11 +37,12 @@ public class File extends FolderItem {
 		inserted = cur.getLong(cur.getColumnIndex(Columns.Items.CREATED));
 		downloads = cur.getInt(cur.getColumnIndex(Columns.Files.DOWNLOADS));
 		size = cur.getLong(cur.getColumnIndex(Columns.Files.SIZE));
-		fileType = getFileType();
-		Log.i(TAG, "Creating file " + fileType + " from cursor");
+		fileType = cur.getString(cur.getColumnIndex(Columns.Files.FILETYPE));
+		passwordProtected = cur.getString(cur.getColumnIndex(Columns.Files.PASSWORD_PROTECTED));
+		fileExtension = getFileExtension();
 	}
 
-	public String getFileType() {
+	public String getFileExtension() {
 		int pos = filename.lastIndexOf(".");
 		if (pos > 0 && filename.length() > pos) {
 			return filename.substring(pos + 1).toLowerCase();
