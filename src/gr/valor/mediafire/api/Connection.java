@@ -1,42 +1,24 @@
 package gr.valor.mediafire.api;
 
-import gr.valor.mediafire.R;
 import gr.valor.mediafire.helpers.Helper;
 import gr.valor.mediafire.parser.Elements;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.apache.http.protocol.HTTP;
-
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -59,69 +41,8 @@ public class Connection extends AsyncTask<Object, String, String> implements Api
 		stUrl += "?" + Helper.implode(params, "&");
 		Log.d(TAG, "Connecting to url:" + stUrl);
 		InputStream is = null;
-
-		KeyStore trustStore = null;
-		try {
-			trustStore = KeyStore.getInstance("BKS");
-		} catch (KeyStoreException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		InputStream instream = context.getResources().openRawResource(R.raw.mediafire);
-		try {
-			trustStore.load(instream, "medspy21".toCharArray());
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (CertificateException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				instream.close();
-			} catch (Exception ignore) {
-			}
-		}
-
-		// Create socket factory with given keystore.
-		try {
-			SSLSocketFactory socketFactory = new SSLSocketFactory(trustStore);
-		} catch (KeyManagementException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (UnrecoverableKeyException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (NoSuchAlgorithmException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (KeyStoreException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-		SSLSocketFactory sockFac = null;
-		try {
-			sockFac = new SSLSocketFactory(trustStore);
-		} catch (KeyManagementException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnrecoverableKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (KeyStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		Scheme sch = new Scheme("https", sockFac, 443);
 		HttpClient httpclient = wrapClient(new DefaultHttpClient());
-		// httpclient.getConnectionManager().getSchemeRegistry().register(sch);
 
-		// HttpClient cl = getNewHttpClient();
 		HttpGet http = new HttpGet(stUrl);
 		Log.d(TAG, http.getURI().toString());
 		HttpResponse response = httpclient.execute(http);
@@ -154,59 +75,6 @@ public class Connection extends AsyncTask<Object, String, String> implements Api
 			return new DefaultHttpClient(ccm, base.getParams());
 		} catch (Exception ex) {
 			return null;
-		}
-	}
-
-	public HttpClient getNewHttpClient() {
-		try {
-			InputStream in = null;
-			// Load default system keystore
-			KeyStore trusted = KeyStore.getInstance(KeyStore.getDefaultType());
-			try {
-				in = new BufferedInputStream(new FileInputStream(System.getProperty("javax.net.ssl.trustStore"))); // Normally:
-																													// "/system/etc/security/cacerts.bks"
-				trusted.load(in, null); // no password is "changeit"
-			} finally {
-				if (in != null) {
-					in.close();
-					in = null;
-				}
-			}
-
-			// Load application keystore & merge with system
-			try {
-				KeyStore appTrusted = KeyStore.getInstance("BKS");
-				in = context.getResources().openRawResource(R.raw.mediafire);
-				appTrusted.load(in, context.getString(R.string.store_password).toCharArray());
-				for (Enumeration<String> e = appTrusted.aliases(); e.hasMoreElements();) {
-					final String alias = e.nextElement();
-					final KeyStore.Entry entry = appTrusted.getEntry(alias, null);
-					trusted.setEntry(System.currentTimeMillis() + ":" + alias, entry, null);
-				}
-			} finally {
-				if (in != null) {
-					in.close();
-					in = null;
-				}
-			}
-
-			HttpParams params = new BasicHttpParams();
-			HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-			HttpProtocolParams.setContentCharset(params, HTTP.UTF_8);
-
-			SSLSocketFactory sf = new SSLSocketFactory(trusted);
-			sf.setHostnameVerifier(SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
-			sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-
-			SchemeRegistry registry = new SchemeRegistry();
-			registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-			registry.register(new Scheme("https", sf, 443));
-
-			ClientConnectionManager ccm = new ThreadSafeClientConnManager(params, registry);
-
-			return new DefaultHttpClient(ccm, params);
-		} catch (Exception e) {
-			return new DefaultHttpClient();
 		}
 	}
 

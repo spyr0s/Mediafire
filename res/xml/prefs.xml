@@ -9,5 +9,6 @@
         android:summary="@string/pref_cacheSum"
         android:title="@string/pref_cacheDialog" 
         android:numeric="integer" />
+    <CheckBoxPreference android:key="@string/pref_gsmKey" android:summaryOff="@string/pref_gsmSumOff" android:summary="@string/pref_gsmDialog" android:summaryOn="@string/pref_gsmSumOn" android:title="@string/pref_gsm"/>
 
 </PreferenceScreen>

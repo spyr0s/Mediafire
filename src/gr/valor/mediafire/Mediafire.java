@@ -34,6 +34,7 @@ public class Mediafire extends Application {
 	private long cacheDuration = 0L;
 	private SharedPreferences prefs;
 	private boolean closeApp;
+	private boolean forceOnline;
 
 	@Override
 	public void onCreate() {
@@ -57,6 +58,12 @@ public class Mediafire extends Application {
 	public String getStringPref(String prefName, String def) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		return prefs.getString(prefName, def);
+
+	}
+
+	public boolean getBooleanPref(String prefName, boolean def) {
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		return prefs.getBoolean(prefName, def);
 
 	}
 
@@ -146,7 +153,7 @@ public class Mediafire extends Application {
 	}
 
 	public boolean isAllowGsm() {
-		return allowGsm;
+		return getBooleanPref(getString(R.string.pref_gsmKey), false);
 	}
 
 	public void setAllowGsm(boolean allowGsm) {
@@ -246,6 +253,21 @@ public class Mediafire extends Application {
 	 */
 	public boolean isCloseApp() {
 		return closeApp;
+	}
+
+	/**
+	 * @param forceOnline
+	 *            the forceOnline to set
+	 */
+	public void setForceOnline(boolean forceOnline) {
+		this.forceOnline = forceOnline;
+	}
+
+	/**
+	 * @return the forceOnline
+	 */
+	public boolean isForceOnline() {
+		return forceOnline;
 	}
 
 }

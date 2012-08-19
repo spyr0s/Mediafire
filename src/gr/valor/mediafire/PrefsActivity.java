@@ -3,6 +3,7 @@ package gr.valor.mediafire;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -92,6 +93,9 @@ public class PrefsActivity extends PreferenceActivity implements OnSharedPrefere
 				e.printStackTrace();
 				Log.w(TAG, "Setting cache duration failed ");
 			}
+		} else if (key.equals(getString(R.string.pref_gsmKey))) {
+			CheckBoxPreference cb = (CheckBoxPreference) pref;
+			mediafire.setAllowGsm(cb.isChecked());
 		}
 	}
 

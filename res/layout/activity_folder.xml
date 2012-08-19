@@ -19,49 +19,16 @@
              android:layout_alignParentLeft="true"
              android:layout_alignParentTop="true"
              android:layout_marginBottom="5dp"
-             android:background="#ddd"
              android:paddingBottom="5dp"
              android:paddingLeft="10dp"
              android:paddingTop="5dp"
              android:text="@string/folder_title"
              android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <LinearLayout
-        android:id="@+id/folder_header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_weight="0"
-        android:orientation="horizontal"
-        android:onClick="parentFolder"
-        android:showDividers="end" >
-
-        <ImageView
-            android:id="@+id/folder_back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
-            android:layout_marginTop="12dp"
-            android:src="@drawable/icon_folder" />
-
-        <TextView
-            android:id="@+id/folder_parent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="..."
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    </LinearLayout>
-
-        <ListView
+        <eu.erikw.PullToRefreshListView
             android:id="@+id/listView_items"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-        </ListView>
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

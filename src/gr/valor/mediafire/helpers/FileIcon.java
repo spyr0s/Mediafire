@@ -7,9 +7,11 @@ import android.app.Activity;
 
 public class FileIcon {
 
-	private String ext;
 
 	private Activity activity;
+
+	private String name;
+
 
 	public static Map<String, String[]> types = new HashMap<String, String[]>();
 
@@ -21,10 +23,11 @@ public class FileIcon {
 		types.put("audio", new String[] { "mp3", "wav", "wma" });
 		types.put("text", new String[] { "txt" });
 		types.put("video", new String[] { "avi", "mkv", "mp4", "wmv", "mpg" });
+		types.put("photoshop", new String[] {"psd"});
 	}
 
-	public FileIcon(String ext, Activity activity) {
-		this.ext = ext;
+	public FileIcon(String name, Activity activity) {
+		this.name = name;
 		this.activity = activity;
 	}
 
@@ -32,12 +35,16 @@ public class FileIcon {
 		for (Map.Entry<String, String[]> icons : types.entrySet()) {
 			String[] value = icons.getValue();
 			for (int i = 0; i < value.length; i++) {
-				if (ext.equals(value[i])) {
-					String img = icons.getKey();
-					return activity.getResources().getIdentifier(img, "drawable", "gr.valor.mediafire");
+				if (name.equals(value[i])) {
+					name = icons.getKey();
+					return getIconByfilename();
 				}
 			}
 		}
-		return 0;
+		return getIconByfilename();
+	}
+	
+	private int getIconByfilename(){
+		return activity.getResources().getIdentifier(name, "drawable", "gr.valor.mediafire");
 	}
 }

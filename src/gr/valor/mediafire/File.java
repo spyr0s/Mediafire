@@ -15,6 +15,7 @@ public class File extends FolderItem {
 	public String fileType;
 	public String passwordProtected;
 	public Note note;
+	public String itemType =  TYPE_FILE;
 	public boolean isFolder = false;
 	protected Map<String, String> map;
 	public String fileExtension = FolderItem.TYPE_FILE;
@@ -38,6 +39,7 @@ public class File extends FolderItem {
 		downloads = cur.getInt(cur.getColumnIndex(Columns.Files.DOWNLOADS));
 		size = cur.getLong(cur.getColumnIndex(Columns.Files.SIZE));
 		fileType = cur.getString(cur.getColumnIndex(Columns.Files.FILETYPE));
+		privacy =  cur.getString(cur.getColumnIndex(Columns.Items.PRIVACY));
 		passwordProtected = cur.getString(cur.getColumnIndex(Columns.Files.PASSWORD_PROTECTED));
 		fileExtension = getFileExtension();
 	}

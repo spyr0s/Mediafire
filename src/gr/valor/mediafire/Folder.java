@@ -24,6 +24,7 @@ public class Folder extends FolderItem {
 	public int revision;
 	public long epoch;
 	public String dropboxEnabled;
+	public String itemType = TYPE_FOLDER;
 	private boolean fullImport = false;
 
 	public Folder(Cursor cur) {
@@ -40,6 +41,7 @@ public class Folder extends FolderItem {
 		parent = cur.getString(cur.getColumnIndex(Columns.Items.PARENT));
 		created = cur.getString(cur.getColumnIndex(Columns.Items.CREATED));
 		inserted = cur.getLong(cur.getColumnIndex(Columns.Items.INSERTED));
+		privacy = cur.getString(cur.getColumnIndex(Columns.Items.PRIVACY));
 		folderCount = cur.getInt(cur.getColumnIndex(Columns.Folders.FOLDERS));
 		fileCount = cur.getInt(cur.getColumnIndex(Columns.Folders.FILES));
 		revision = cur.getInt(cur.getColumnIndex(Columns.Folders.REVISION));
@@ -58,19 +60,33 @@ public class Folder extends FolderItem {
 
 	}
 
+	public Folder createBackFolder() {
+		Folder bf = new Folder();
+		bf.name = "...";
+		bf.itemType = TYPE_BACK;
+		bf.privacy = "";
+		return bf;
+	}
+
 	public List<Map<String, String>> getFolderItems() {
 		if (!folderItems.isEmpty()) {
 			folderItems.clear();
 		}
+		if (this.parent != null) {
+			Log.d(TAG, "Adding back header");
+			subFolders.add(0, createBackFolder());
 
+		}
 		for (Iterator<Folder> it = subFolders.iterator(); it.hasNext();) {
 			Folder folder = it.next();
 			Map<String, String> map = new HashMap<String, String>();
-			map.put(TYPE, TYPE_FOLDER);
+			map.put(TYPE, folder.itemType);
 			map.put(FOLDERKEY, folder.folderKey);
 			map.put(NAME, folder.name);
 			map.put(CREATED, folder.created);
-			map.put(SIZE, getNumOfItems(folder));
+			map.put(PRIVACY, folder.privacy);
+			map.put(DOWNLOAD_ICON, NO);
+			map.put(SIZE_ICON, NO);
 			folderItems.add(map);
 		}
 
@@ -81,8 +97,11 @@ public class Folder extends FolderItem {
 			map.put(NAME, file.filename);
 			map.put(QUICKKEY, file.quickkey);
 			map.put(CREATED, file.created);
-			map.put(DOWNLOADS, "downloads:" + file.downloads + ", size: " + file.getSize());
-			map.put(SIZE, "");
+			map.put(PRIVACY, file.privacy);
+			map.put(DOWNLOADS, String.valueOf(file.downloads));
+			map.put(DOWNLOAD_ICON, YES);
+			map.put(SIZE, file.getSize());
+			map.put(SIZE_ICON, YES);
 			folderItems.add(map);
 		}
 
@@ -145,6 +164,9 @@ public class Folder extends FolderItem {
 	}
 
 	private String getNumOfItems(Folder folder) {
+		if (folder.itemType.equals(TYPE_BACK)) {
+			return "";
+		}
 		int folders = folder.folderCount > 0 ? folder.folderCount : folder.subFolders.size();
 		int files = folder.fileCount > 0 ? folder.fileCount : folder.files.size();
 		String[] r = new String[2];

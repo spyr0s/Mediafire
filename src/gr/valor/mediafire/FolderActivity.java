@@ -1,5 +1,7 @@
 package gr.valor.mediafire;
 
+import eu.erikw.PullToRefreshListView;
+import eu.erikw.PullToRefreshListView.OnRefreshListener;
 import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.api.MyFilesJSONParser;
@@ -32,11 +34,11 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class FolderActivity extends BaseActivity implements SwipeInterface {
 	private static final String TAG = "FolderActivity";
@@ -46,14 +48,16 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	public static final String FULL_IMPORT = "gr.valor.mediafire.FULL_IMPORT";
 	public Folder folder;
 
-	private static final String[] FOLDER_FROM = { Folder.TYPE, Folder.NAME, Folder.CREATED, File.DOWNLOADS, File.SIZE };
+	private static final String[] FOLDER_FROM = { Folder.TYPE, Folder.NAME, Folder.CREATED, File.DOWNLOAD_ICON, File.DOWNLOADS, File.SIZE,
+			File.PRIVACY };
 	private static final int[] FOLDER_TO = { R.id.folder_item_type, R.id.folder_item_name, R.id.folder_item_created,
-			R.id.folder_item_downloads, R.id.folder_item_size };
+			R.id.folder_item_downicon, R.id.folder_item_downloads, R.id.folder_item_size, R.id.folder_item_privacy };
 	List<Map<String, String>> folderItems = new ArrayList<Map<String, String>>();
 	SimpleAdapter folderAdapter;
 	private int folderResource = R.layout.folder_item;
 
 	View.OnTouchListener gestureListener;
+	private PullToRefreshListView listView;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -64,19 +68,49 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		ActivitySwipeDetector activitySwipeDetector = new ActivitySwipeDetector(this);
 		RelativeLayout lowestLayout = (RelativeLayout) this.findViewById(R.id.activity_folder_layout);
 		lowestLayout.setOnTouchListener(activitySwipeDetector);
+		listView = (PullToRefreshListView) findViewById(R.id.listView_items);
+		listView.setOnRefreshListener(new OnRefreshListener() {
 
+			@Override
+			public void onRefresh() {
+				// Your code to refresh the list contents goes here
+
+				// Make sure you call listView.onRefreshComplete()
+				// when the loading is done. This can be done from here or any
+				// other place, like on a broadcast receive from your loading
+				// service or the onPostExecute of your AsyncTask.
+
+				// For the sake of this sample, the code will pause here to
+				// force a delay when invoking the refresh
+				listView.postDelayed(new Runnable() {
+
+					@Override
+					public void run() {
+						Log.d(TAG, "Start Refreshing");
+						mediafire.setForceOnline(true);
+						requestFolder();
+					}
+				}, 2000);
+			}
+		});
 	}
 
 	private void requestFolder() {
-		Log.d(TAG, "Showing folder " + mediafire.getCurrentFolder());
+		Log.d(TAG, "Showing folder " + mediafire.getCurrentFolder() + " force online: " + mediafire.isForceOnline());
 		if (!mediafire.isOnline()) {
+			if (mediafire.isForceOnline()) {
+				Toast.makeText(this, "There's no internet connection", Toast.LENGTH_SHORT).show();
+				mediafire.setForceOnline(false);
+				listView.onRefreshComplete();
+				return;
+			}
 			if (!mediafire.isEmptyDb()) {
 				createOfflineList();
 			} else {
-				showAlertDialog();
+				Toast.makeText(this, "There's no internet connection", Toast.LENGTH_SHORT).show();
 			}
 		} else {
-			if (mediafire.getCurrentFolder().isCached(mediafire.getCacheDuration())) {
+			if (mediafire.getCurrentFolder().isCached(mediafire.getCacheDuration()) && !mediafire.isForceOnline()) {
 				createCachedList();
 			} else {
 				boolean validToken = false;
@@ -122,18 +156,17 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	}
 
 	private void createFullImportList() {
+		showAlertDialog();
+
+	}
+
+	private void dofullImport() {
 		Log.d(TAG, "Creating full import");
 		mediafire.setFullImport(true);
 		getOnlineFolderItems();
 	}
 
 	private void createList() {
-		LinearLayout h = (LinearLayout) findViewById(R.id.folder_header);
-		if (mediafire.getCurrentFolder().folderKey.equals(Folder.ROOT_KEY)) {
-			h.setVisibility(View.GONE);
-		} else {
-			h.setVisibility(View.VISIBLE);
-		}
 		Mediabase m = new Mediabase(this);
 		setTitle("Mediafire - " + mediafire.getCurrentFolder().name);
 		SQLiteDatabase db = m.getReadableDatabase();
@@ -152,7 +185,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				createFullImportList();
+				dofullImport();
 			}
 		});
 		alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
@@ -204,10 +237,6 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.menu, menu);
 		return true;
-	}
-
-	public void parentFolder(View view) {
-		onBackPressed();
 	}
 
 	private void getOnlineFolderItems() {
@@ -262,7 +291,9 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			@SuppressWarnings("unchecked")
 			Map<String, String> fi = (Map<String, String>) parent.getItemAtPosition(position);
-			if (fi.get(FolderItem.TYPE).equals(FolderItem.TYPE_FOLDER)) {
+			if (fi.get(FolderItem.TYPE).equals(FolderItem.TYPE_BACK)) {
+				onBackPressed();
+			} else if (fi.get(FolderItem.TYPE).equals(FolderItem.TYPE_FOLDER)) {
 				Mediabase mb = new Mediabase(FolderActivity.this);
 				SQLiteDatabase db = mb.getReadableDatabase();
 				try {
@@ -289,7 +320,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 				ImageView im = (ImageView) view;
 				Resources res = getResources();
 				Drawable d = null;
-				if (textRepresentation.equals(FolderItem.TYPE_FOLDER)) {
+				if (textRepresentation.equals(FolderItem.TYPE_FOLDER) || textRepresentation.equals(FolderItem.TYPE_BACK)) {
 					d = res.getDrawable(R.drawable.icon_folder);
 					im.setImageDrawable(d);
 				} else if (textRepresentation.equals(FolderItem.TYPE_FILE)) {
@@ -308,6 +339,24 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 					}
 				}
 
+				return true;
+			} else if (view.getId() == R.id.folder_item_privacy) {
+				String img = "privacy_" + textRepresentation;
+				img = img.replaceAll(" ", "").toLowerCase();
+				FileIcon icon = new FileIcon(img, FolderActivity.this);
+				int r = icon.getIcon();
+				if (r == 0) {
+					((ImageView) view).setVisibility(View.INVISIBLE);
+				} else {
+					((ImageView) view).setImageResource(r);
+				}
+				return true;
+			} else if (view.getId() == R.id.folder_item_downicon) {
+				if (textRepresentation.equals(ItemConstants.NO)) {
+					view.setVisibility(View.INVISIBLE);
+				} else if (textRepresentation.equals(ItemConstants.YES)) {
+					view.setVisibility(View.VISIBLE);
+				}
 				return true;
 			}
 			return false;
@@ -368,8 +417,10 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			this.dialog.setMessage("Fetching " + mediafire.getCurrentFolder().name + "...");
-			this.dialog.show();
+			if (!mediafire.isForceOnline()) {
+				this.dialog.setMessage("Fetching " + mediafire.getCurrentFolder().name + "...");
+				this.dialog.show();
+			}
 		}
 
 		@Override
@@ -382,13 +433,18 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 				result.updateDb(db, mediafire.isFullImport());
 				getOfflineFolderItems();
 				db.close();
+				mediafire.setForceOnline(false);
+				listView.onRefreshComplete();
 				createList();
 				mediafire.setFullImport(false);
+				Toast.makeText(FolderActivity.this, "Folder updated", Toast.LENGTH_SHORT).show();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} finally {
-				this.dialog.dismiss();
+				if (this.dialog.isShowing()) {
+					this.dialog.dismiss();
+				}
 			}
 
 		}

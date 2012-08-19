@@ -23,4 +23,11 @@
     <item>86400</item>
     <item>31536000</item>
   </string-array>
+  
+   <string name="pref_gsm">Allow GSM</string>
+  <string name="pref_gsmSumOn">Allow mobile data connection</string>
+  <string name="pref_gsmSumOff">Do not allow mobile data connection</string>
+  <string name="pref_gsmDialog">Mobile data connection</string>
+  <string name="pref_gsmKey">gsmKey</string>
+  
 </resources>

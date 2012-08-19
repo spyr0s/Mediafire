@@ -22,5 +22,8 @@
     <string name="menu_login">Login</string>
     <string name="menu_logout">Logout</string>
     <string name="menu_full_import">Full import</string>
+    <string name="ptr_pull_to_refresh">Pull to refresh folder</string>
+    <string name="ptr_release_to_refresh">Release to refresh</string>
+    <string name="ptr_refreshing">Refreshing...</string>
 
 </resources>

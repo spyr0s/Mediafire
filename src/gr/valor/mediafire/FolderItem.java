@@ -16,6 +16,7 @@ public abstract class FolderItem implements ItemConstants {
 	public long inserted = 0L;
 	public int flag;
 	public String privacy;
+	public String itemType;
 	public ArrayList<Folder> subFolders = new ArrayList<Folder>();
 	public ArrayList<File> files = new ArrayList<File>();
 	List<Map<String, String>> folderItems = new ArrayList<Map<String, String>>();
