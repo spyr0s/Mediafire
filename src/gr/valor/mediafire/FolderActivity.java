@@ -406,6 +406,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		private SQLiteDatabase db;
 		private ProgressDialog dialog;
 		private Mediafire mediafire;
+		private String currentFolder;
 
 		public MyOnlineFilesTask(FolderActivity activity, Connection connection) {
 			this.connection = connection;
@@ -417,8 +418,8 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			if (!mediafire.isForceOnline()) {
-				this.dialog.setMessage("Fetching " + mediafire.getCurrentFolder().name + "...");
+			this.dialog.setMessage("Fetching " + mediafire.getCurrentFolder().name + "...");
+			if (!this.dialog.isShowing()) {
 				this.dialog.show();
 			}
 		}
@@ -455,8 +456,16 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			return getFolderContent(folder);
 		}
 
+		@Override
+		protected void onProgressUpdate(Void... values) {
+			super.onProgressUpdate(values);
+			this.dialog.setMessage("Fetching " + this.currentFolder + "...");
+		}
+
 		private Folder getFolderContent(Folder folder) {
 			String[] types = new String[] { "folders", "files" };
+			currentFolder = folder.name;
+			publishProgress();
 			folder.subFolders = new ArrayList<Folder>();
 			folder.files = new ArrayList<File>();
 			folder.inserted = System.currentTimeMillis() / 1000;
