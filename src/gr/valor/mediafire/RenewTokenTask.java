@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -20,7 +19,6 @@ class RenewTokenTask extends AsyncTask<String, Void, String> implements ApiUrls 
 	private LoginActivity activity;
 	private Connection connection;
 	private String token;
-	private ProgressDialog d;
 	private Mediafire mediafire;
 
 	public RenewTokenTask(Mediafire mediafire, Connection connection) {
@@ -30,15 +28,14 @@ class RenewTokenTask extends AsyncTask<String, Void, String> implements ApiUrls 
 
 	@Override
 	protected void onPostExecute(String result) {
-		this.d.dismiss();
 		super.onPostExecute(result);
 		if (result == null || result.equals("null")) {
 			Log.d(TAG, "Wrong credentials");
 			Toast.makeText(this.activity, "Wrong username or password", Toast.LENGTH_LONG).show();
 		} else {
 			Log.d(TAG, "Setting credentials");
-			activity.mediafire.setSessionToken(result);
-			activity.mediafire.setSessionTokenCreationTime(System.currentTimeMillis() / 1000);
+			mediafire.setSessionToken(result);
+			mediafire.setSessionTokenCreationTime(System.currentTimeMillis() / 1000);
 		}
 
 	}
@@ -63,7 +60,7 @@ class RenewTokenTask extends AsyncTask<String, Void, String> implements ApiUrls 
 				builder.append(line);
 			}
 			String response = builder.toString();
-			SessionToken s = new SessionToken(response);
+			SessionToken s = new SessionToken(response, true);
 			return s.sessionToken;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

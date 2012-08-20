@@ -80,7 +80,7 @@ class LoginTask extends AsyncTask<String, Void, String> implements ApiUrls {
 				builder.append(line);
 			}
 			String response = builder.toString();
-			SessionToken s = new SessionToken(response);
+			SessionToken s = new SessionToken(response, false);
 			return s.sessionToken;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

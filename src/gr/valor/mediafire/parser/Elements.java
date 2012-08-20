@@ -6,6 +6,7 @@ public interface Elements {
 	String LOGIN_TOKEN = "login_token";
 	String SESSION_TOKEN = "session_token";
 	String GET_SESSION_TOKEN_ACTION = "user/get_session_token";
+	String RENEW_SESSION_TOKEN_ACTION = "user/renew_session_token";
 	String GET_FOLDER_CONTENT_ACTION = "folder/get_content";
 	String SUCCESS = "Success";
 	String RESULT = "result";

@@ -16,6 +16,7 @@ public class Mediafire extends Application {
 	public static final String EMAIL_PREF_NAME = "emailPref";
 	public static final String PASSWORD_PREF_NAME = "passwordPref";
 	public static final int TOKEN_LIFETIME = 600;
+	public static final int TOKEN_RENEW_TIME = 400;
 	public static final String CLOSE_APP = "closeApplication";
 	private boolean isLoggedIn = false;
 	private String email = null;
@@ -161,16 +162,17 @@ public class Mediafire extends Application {
 	}
 
 	public boolean isTokenValid() throws Exception {
-		if (getSessionToken() == null) {
+		if (getSessionToken() == null || System.currentTimeMillis() / 1000 - getSessionTokenCreationTime() > TOKEN_LIFETIME) {
 			Log.d(TAG, "Token is null. Need to login");
 			throw new Exception("Null Token");
-		}
-		if (System.currentTimeMillis() / 1000 - getSessionTokenCreationTime() < TOKEN_LIFETIME) {
+		} else if (System.currentTimeMillis() / 1000 - getSessionTokenCreationTime() > TOKEN_RENEW_TIME) {
+			Log.d(TAG, "Renewing token");
+			return renewSession();
+		} else {
 			Log.d(TAG, "A valid token");
 			return true;
 		}
-		Log.d(TAG, "Renewing token");
-		return renewSession();
+
 	}
 
 	private boolean renewSession() {

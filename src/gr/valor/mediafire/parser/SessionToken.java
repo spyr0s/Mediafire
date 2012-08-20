@@ -10,9 +10,11 @@ import android.util.Log;
 public class SessionToken extends JSONParser implements Elements {
 	public static final String TAG = "SessionToken";
 	public String sessionToken = null;
+	private boolean renew;
 
-	public SessionToken(String jsonString) {
+	public SessionToken(String jsonString, boolean renew) {
 		this.jsonString = jsonString;
+		this.renew = renew;
 		try {
 			parse();
 		} catch (JSONException e) {
@@ -30,7 +32,7 @@ public class SessionToken extends JSONParser implements Elements {
 			action = response.getString(ACTION);
 			result = response.getString(RESULT);
 			Log.d(TAG, action + " " + result);
-			if (result.equals(SUCCESS) && action.equals(GET_SESSION_TOKEN_ACTION)) {
+			if (result.equals(SUCCESS) && action.equals(renew ? RENEW_SESSION_TOKEN_ACTION : GET_SESSION_TOKEN_ACTION)) {
 				sessionToken = response.getString(SESSION_TOKEN);
 				Log.d(TAG, "session token " + sessionToken);
 			} else {
