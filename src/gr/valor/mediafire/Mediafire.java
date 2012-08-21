@@ -2,6 +2,7 @@ package gr.valor.mediafire;
 
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.database.Mediabase;
+import gr.valor.mediafire.tasks.RenewTokenTask;
 
 import java.util.concurrent.ExecutionException;
 
