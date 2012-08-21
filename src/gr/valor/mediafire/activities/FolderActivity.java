@@ -3,6 +3,7 @@ package gr.valor.mediafire.activities;
 import eu.erikw.PullToRefreshListView;
 import gr.valor.mediafire.File;
 import gr.valor.mediafire.Folder;
+import gr.valor.mediafire.FolderItem;
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.api.MyOfflineFiles;
@@ -11,6 +12,7 @@ import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.helpers.ActivitySwipeDetector;
 import gr.valor.mediafire.helpers.SwipeInterface;
 import gr.valor.mediafire.listeners.FolderItemsListener;
+import gr.valor.mediafire.listeners.FolderItemsLongClickListener;
 import gr.valor.mediafire.listeners.FolderRefreshListener;
 import gr.valor.mediafire.tasks.MyOnlineFilesTask;
 
@@ -24,9 +26,12 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
-import android.widget.ListView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -47,7 +52,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	List<Map<String, String>> folderItems = new ArrayList<Map<String, String>>();
 	SimpleAdapter folderAdapter;
 	private int folderResource = R.layout.folder_item;
-
+	public TextView emptyList;
 	View.OnTouchListener gestureListener;
 	public PullToRefreshListView listView;
 
@@ -55,13 +60,28 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_folder);
-		requestFolder();
 		// Gesture detection
 		ActivitySwipeDetector activitySwipeDetector = new ActivitySwipeDetector(this);
 		RelativeLayout lowestLayout = (RelativeLayout) this.findViewById(R.id.activity_folder_layout);
 		lowestLayout.setOnTouchListener(activitySwipeDetector);
 		listView = (PullToRefreshListView) findViewById(R.id.listView_items);
+		emptyList = (TextView) findViewById(R.id.listView_empty);
 		listView.setOnRefreshListener(new FolderRefreshListener(this));
+		requestFolder();
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		registerForContextMenu(listView);
+		registerForContextMenu(emptyList);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		unregisterForContextMenu(listView);
+		unregisterForContextMenu(emptyList);
 	}
 
 	public void requestFolder() {
@@ -203,6 +223,28 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	}
 
 	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+
+		super.onCreateContextMenu(menu, v, menuInfo);
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.activity_folder, menu);
+		if (v.getId() == R.id.listView_empty) {
+			// menu.removeItem(R.id.menu_createFolder);
+			menu.removeItem(R.id.menu_viewFile);
+		} else {
+			AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+			if (info != null) {
+				Map<String, String> fi = (Map<String, String>) listView.getItemAtPosition(info.position);
+				if (fi.get(FolderItem.TYPE).equals(FolderItem.TYPE_FOLDER)) {
+					menu.removeItem(R.id.menu_viewFile);
+				}
+
+			}
+		}
+
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.menu, menu);
 		return true;
@@ -242,9 +284,11 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	}
 
 	private void populateList() {
-		ListView listFolders = (ListView) findViewById(R.id.listView_items);
-		listFolders.setAdapter(folderAdapter);
-		listFolders.setOnItemClickListener(new FolderItemsListener(this));
+		listView.setAdapter(folderAdapter);
+		listView.setOnItemClickListener(new FolderItemsListener(this));
+		listView.setOnItemLongClickListener(new FolderItemsLongClickListener(this));
+		emptyList.setText("");
+
 	}
 
 	public void right2left(View v) {

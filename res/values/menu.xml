@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+     <string name="menu_settings">Settings</string>
+     <string name="menu_login">Login</string>
+    <string name="menu_logout">Logout</string>
+    <string name="menu_full_import">Full import</string>
+    <string name="menu_folderlist">Folder List</string>
+    <string name="menu_createFolder">Create Folder</string>
+        <string name="menu_viewFile">File Info</string>
+</resources>
