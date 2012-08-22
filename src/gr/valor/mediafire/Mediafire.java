@@ -12,10 +12,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-public class Mediafire extends Application {
+public class Mediafire extends Application implements PrefConstants {
 	public static final String TAG = "Mediafire";
-	public static final String EMAIL_PREF_NAME = "emailPref";
-	public static final String PASSWORD_PREF_NAME = "passwordPref";
+
 	public static final int TOKEN_LIFETIME = 600;
 	public static final int TOKEN_RENEW_TIME = 400;
 	public static final String CLOSE_APP = "closeApplication";
@@ -41,26 +40,74 @@ public class Mediafire extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		setEmail(getStringPref(EMAIL_PREF_NAME, null));
-		setPassword(getStringPref(PASSWORD_PREF_NAME, null));
+		setEmail((String) getPref(PREF_TYPE_STRING, PREF_KEY_EMAIL, null));
+		setPassword((String) getPref(PREF_TYPE_STRING, PREF_KEY_PASSWORD, null));
 
 	}
 
 	public void saveCredentials() {
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		SharedPreferences.Editor editor = prefs.edit();
 		if (rememberMe) {
 			Log.d(TAG, "Saving credentials");
-			editor.putString(EMAIL_PREF_NAME, getEmail());
-			editor.putString(PASSWORD_PREF_NAME, getPassword());
+			setPref(PREF_TYPE_STRING, PREF_KEY_EMAIL, getEmail());
+			setPref(PREF_TYPE_STRING, PREF_KEY_PASSWORD, getPassword());
+
 		}
-		editor.commit();
 	}
 
-	public String getStringPref(String prefName, String def) {
+	public boolean setPref(int type, String pref, Object value) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		return prefs.getString(prefName, def);
+		SharedPreferences.Editor editor = prefs.edit();
+		switch (type) {
+		case PREF_TYPE_INT:
+			try {
+				int intV = Integer.parseInt(String.valueOf(value));
+				editor.putInt(pref, intV);
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+				return false;
+			}
+			break;
+		case PREF_TYPE_LONG:
+			try {
+				long longV = Long.parseLong(String.valueOf(value));
+				editor.putLong(pref, longV);
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+				return false;
+			}
+			break;
+		case PREF_TYPE_BOOLEAN:
+			// boolean boolV = Boolean.parseBoolean(String.valueOf(value));
+			boolean boolV = (Boolean) value;
+			editor.putBoolean(pref, boolV);
+			break;
+		case PREF_TYPE_STRING:
+			String strV = String.valueOf(value);
+			editor.putString(pref, strV);
+			break;
+		default:
+			break;
+		}
+		return editor.commit();
+	}
 
+	public Object getPref(int type, String pref, Object def) {
+		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		switch (type) {
+		case PREF_TYPE_INT:
+			int intDef = Integer.parseInt(String.valueOf(def));
+			return prefs.getInt(pref, intDef);
+		case PREF_TYPE_LONG:
+			long longDef = Long.parseLong(String.valueOf(def));
+			return prefs.getLong(pref, longDef);
+		case PREF_TYPE_BOOLEAN:
+			return prefs.getBoolean(pref, (Boolean) def);
+		case PREF_TYPE_STRING:
+			return prefs.getString(pref, String.valueOf(def));
+		default:
+			break;
+		}
+		return null;
 	}
 
 	public boolean getBooleanPref(String prefName, boolean def) {
@@ -92,11 +139,15 @@ public class Mediafire extends Application {
 	}
 
 	public long getSessionTokenCreationTime() {
+		if (sessionTokenCreationTime == 0) {
+			sessionTokenCreationTime = (Long) getPref(PREF_TYPE_LONG, PREF_KEY_SESSION_TOKEN_TIME, sessionTokenCreationTime);
+		}
 		return sessionTokenCreationTime;
 	}
 
 	public void setSessionTokenCreationTime(long sessionTokenCreationTime) {
 		this.sessionTokenCreationTime = sessionTokenCreationTime;
+		setPref(PREF_TYPE_LONG, PREF_KEY_SESSION_TOKEN_TIME, sessionTokenCreationTime);
 	}
 
 	public boolean isLoggedIn() throws Exception {
@@ -221,11 +272,15 @@ public class Mediafire extends Application {
 	}
 
 	public String getSessionToken() {
+		if (sessionToken == null) {
+			sessionToken = (String) getPref(PREF_TYPE_STRING, PREF_KEY_SESSION_TOKEN, null);
+		}
 		return sessionToken;
 	}
 
 	public void setSessionToken(String sessionToken) {
 		this.sessionToken = sessionToken;
+		setPref(PREF_TYPE_STRING, PREF_KEY_SESSION_TOKEN, sessionToken);
 	}
 
 	/**

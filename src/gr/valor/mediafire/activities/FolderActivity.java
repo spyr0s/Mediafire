@@ -226,6 +226,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
 
 		super.onCreateContextMenu(menu, v, menuInfo);
+
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.activity_folder, menu);
 		if (v.getId() == R.id.listView_empty) {
@@ -236,7 +237,17 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			if (info != null) {
 				Map<String, String> fi = (Map<String, String>) listView.getItemAtPosition(info.position);
 				if (fi.get(FolderItem.TYPE).equals(FolderItem.TYPE_FOLDER)) {
+					menu.setHeaderTitle("Folder Actions");
+					menu.setHeaderIcon(R.drawable.icon_folder);
 					menu.removeItem(R.id.menu_viewFile);
+				} else if (fi.get(FolderItem.TYPE).equals(FolderItem.TYPE_BACK)) {
+
+					menu.removeItem(R.id.menu_viewFile);
+					menu.removeItem(R.id.menu_createFolder);
+				} else {
+					menu.setHeaderTitle("File Actions");
+					menu.setHeaderIcon(R.drawable.icon_file);
+					menu.removeItem(R.id.menu_createFolder);
 				}
 
 			}
