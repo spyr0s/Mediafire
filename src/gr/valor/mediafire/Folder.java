@@ -108,30 +108,50 @@ public class Folder extends FolderItem {
 		return folderItems;
 	}
 
+	private boolean itemExists(SQLiteDatabase db, String key) {
+		Cursor cur = db.rawQuery("SELECT " + Columns.Items.KEY + " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + "=?",
+				new String[] { key });
+		if (cur.getCount() > 0) {
+			cur.close();
+			return true;
+		}
+		cur.close();
+		return false;
+	}
+
 	private void insertFolderInDb(SQLiteDatabase db, Folder folder, boolean isRoot) {
-		db.execSQL("DELETE FROM " + Mediabase.TABLE_FOLDERS + " WHERE  " + Columns.Folders.FOLDERKEY + " IN( SELECT  " + Columns.Items.KEY
-				+ " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + " = '" + folder.folderKey + "' OR "
-				+ Columns.Items.PARENT + " = '" + folder.folderKey + "')");
-		db.execSQL("DELETE FROM " + Mediabase.TABLE_FILES + " WHERE  " + Columns.Files.QUICKKEY + " IN( SELECT  " + Columns.Items.KEY
-				+ " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + " = '" + folder.folderKey + "' OR "
-				+ Columns.Items.PARENT + " = '" + folder.folderKey + "')");
-		db.execSQL("DELETE FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + " = '" + folder.folderKey + "' OR "
-				+ Columns.Items.PARENT + " = '" + folder.folderKey + "'");
+		// db.execSQL("DELETE FROM " + Mediabase.TABLE_FOLDERS + " WHERE  " +
+		// Columns.Folders.FOLDERKEY + " IN( SELECT  " + Columns.Items.KEY
+		// + " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY +
+		// " = '" + folder.folderKey + "' OR "
+		// + Columns.Items.PARENT + " = '" + folder.folderKey + "')");
+		// db.execSQL("DELETE FROM " + Mediabase.TABLE_FILES + " WHERE  " +
+		// Columns.Files.QUICKKEY + " IN( SELECT  " + Columns.Items.KEY
+		// + " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY +
+		// " = '" + folder.folderKey + "' OR "
+		// + Columns.Items.PARENT + " = '" + folder.folderKey + "')");
+		// db.execSQL("DELETE FROM " + Mediabase.TABLE_ITEMS + " WHERE " +
+		// Columns.Items.KEY + " = '" + folder.folderKey + "' OR "
+		// + Columns.Items.PARENT + " = '" + folder.folderKey + "'");
 
 		long now = (isRoot || folder.folderKey == Folder.ROOT_KEY) ? System.currentTimeMillis() / 1000 : 0;
 
-		db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
-				+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
-				+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + ", " + Columns.Items.INSERTED + ")"
-				+ " VALUES (?,?,?,?,?,?,?, ?, ? , ?)", new Object[] { folder.folderKey, FolderItem.TYPE_FOLDER, folder.parent, folder.name,
-				folder.desc, folder.tags, folder.flag, folder.privacy, folder.created, now });
+		if (itemExists(db, folder.folderKey)) {
+			Log.d(TAG, "Should update  " + folder.name);
+		} else {
+			Log.d(TAG, "Inserting " + folder.name);
+			db.execSQL("INSERT INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
+					+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
+					+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + ", " + Columns.Items.INSERTED + ")"
+					+ " VALUES (?,?,?,?,?,?,?, ?, ? , ?)", new Object[] { folder.folderKey, FolderItem.TYPE_FOLDER, folder.parent,
+					folder.name, folder.desc, folder.tags, folder.flag, folder.privacy, folder.created, now });
 
-		db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FOLDERS + "(" + Columns.Folders.FOLDERKEY + "," + Columns.Folders.FOLDERS
-				+ "," + Columns.Folders.SHARED + "," + Columns.Folders.REVISION + "," + Columns.Folders.EPOCH + ","
-				+ Columns.Folders.DROPBOX_ENABLED + "," + Columns.Folders.FILES + ")" + " VALUES (?,?,?,?,?,?,?)",
-				new Object[] { folder.folderKey, folder.folderCount, folder.shared, folder.revision, folder.epoch, folder.dropboxEnabled,
-						folder.fileCount });
-
+			db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FOLDERS + "(" + Columns.Folders.FOLDERKEY + "," + Columns.Folders.FOLDERS
+					+ "," + Columns.Folders.SHARED + "," + Columns.Folders.REVISION + "," + Columns.Folders.EPOCH + ","
+					+ Columns.Folders.DROPBOX_ENABLED + "," + Columns.Folders.FILES + ")" + " VALUES (?,?,?,?,?,?,?)", new Object[] {
+					folder.folderKey, folder.folderCount, folder.shared, folder.revision, folder.epoch, folder.dropboxEnabled,
+					folder.fileCount });
+		}
 		for (Iterator<Folder> it = folder.subFolders.iterator(); it.hasNext();) {
 			Folder f = it.next();
 			insertFolderInDb(db, f, fullImport);
@@ -149,18 +169,22 @@ public class Folder extends FolderItem {
 	}
 
 	private void insertFileInDb(SQLiteDatabase db, File file) {
-		db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
-				+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
-				+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + " )" + " VALUES (?,?,?,?,?,?,?,?,?)",
-				new Object[] { file.quickkey, FolderItem.TYPE_FILE, file.parent, file.filename, file.desc, file.tags, file.flag,
-						file.privacy, file.created });
+		if (itemExists(db, file.quickkey)) {
+			Log.d(TAG, "Should update file " + file.filename);
+		} else {
+			Log.d(TAG, "Inserting file " + file.filename);
+			db.execSQL(
+					"INSERT OR IGNORE INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
+							+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
+							+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + " )"
+							+ " VALUES (?,?,?,?,?,?,?,?,?)", new Object[] { file.quickkey, FolderItem.TYPE_FILE, file.parent,
+							file.filename, file.desc, file.tags, file.flag, file.privacy, file.created });
 
-		db.execSQL(
-				"INSERT OR IGNORE INTO " + Mediabase.TABLE_FILES + "(" + Columns.Files.QUICKKEY + "," + Columns.Files.DOWNLOADS + ","
-						+ Columns.Files.FILETYPE + "," + Columns.Files.PASSWORD_PROTECTED + "," + Columns.Files.SIZE + ")"
-						+ " VALUES (?,?,?, ?,?)", new Object[] { file.quickkey, file.downloads, file.fileType, file.passwordProtected,
-						file.size });
-
+			db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FILES + "(" + Columns.Files.QUICKKEY + "," + Columns.Files.DOWNLOADS
+					+ "," + Columns.Files.FILETYPE + "," + Columns.Files.PASSWORD_PROTECTED + "," + Columns.Files.SIZE + ")"
+					+ " VALUES (?,?,?, ?,?)", new Object[] { file.quickkey, file.downloads, file.fileType, file.passwordProtected,
+					file.size });
+		}
 	}
 
 	private String getNumOfItems(Folder folder) {
