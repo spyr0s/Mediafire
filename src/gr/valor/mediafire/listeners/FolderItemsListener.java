@@ -1,8 +1,8 @@
 package gr.valor.mediafire.listeners;
 
-import gr.valor.mediafire.Folder;
 import gr.valor.mediafire.FolderItem;
 import gr.valor.mediafire.activities.FolderActivity;
+import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.database.Mediabase;
 
 import java.util.Map;
@@ -30,7 +30,7 @@ public class FolderItemsListener implements OnItemClickListener {
 			Mediabase mb = new Mediabase(activity);
 			SQLiteDatabase db = mb.getReadableDatabase();
 			try {
-				Folder newFolder = Folder.getByFolderKey(db, fi.get(FolderItem.FOLDERKEY));
+				FolderRecord newFolder = new FolderRecord(db, fi.get(FolderItem.FOLDERKEY));
 				activity.mediafire.setCurrentFolder(newFolder);
 				activity.requestFolder();
 			} catch (Exception e) {

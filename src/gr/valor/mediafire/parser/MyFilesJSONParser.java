@@ -1,9 +1,9 @@
 package gr.valor.mediafire.parser;
 
-import gr.valor.mediafire.File;
-import gr.valor.mediafire.Folder;
 import gr.valor.mediafire.FolderItem;
 import gr.valor.mediafire.api.JSONParser;
+import gr.valor.mediafire.database.FileRecord;
+import gr.valor.mediafire.database.FolderRecord;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,7 +13,7 @@ import android.util.Log;
 
 public class MyFilesJSONParser extends JSONParser implements Elements {
 	public static final String TAG = "MyFilesJSONParser";
-	public Folder folder = new Folder();
+	public FolderRecord folder = new FolderRecord();
 	public JSONObject folderContent;
 	public JSONArray folders;
 	public JSONArray files;
@@ -46,7 +46,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 				JSONObject f = (JSONObject) folders.get(i);
 				JSONObject rev = f.getJSONObject(REVISION);
 				Log.d("XML", f.toString());
-				Folder cFolder = new Folder();
+				FolderRecord cFolder = new FolderRecord();
 				cFolder.name = getStringValue(f, NAME);
 				cFolder.created = getStringValue(f, CREATED);
 				cFolder.desc = getStringValue(f, DESC);
@@ -73,7 +73,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 			for (int i = 0; i < files.length(); i++) {
 				JSONObject f = (JSONObject) files.get(i);
 				Log.d("XML", f.toString());
-				File file = new File();
+				FileRecord file = new FileRecord();
 				file.created = getStringValue(f, CREATED);
 				file.desc = getStringValue(f, DESC);
 				file.downloads = f.getInt(DOWNLOADS);

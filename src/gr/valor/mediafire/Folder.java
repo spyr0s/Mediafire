@@ -1,6 +1,7 @@
 package gr.valor.mediafire;
 
 import gr.valor.mediafire.database.Columns;
+import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.helpers.Helper;
 
@@ -27,27 +28,14 @@ public class Folder extends FolderItem {
 	public String itemType = TYPE_FOLDER;
 	private boolean fullImport = false;
 
+	FolderRecord folderRecord;
+
 	public Folder(Cursor cur) {
-		createFolderFromCursor(cur);
+		folderRecord = new FolderRecord(cur);
 	}
 
 	public Folder() {
 		super();
-	}
-
-	private void createFolderFromCursor(Cursor cur) {
-		folderKey = cur.getString(cur.getColumnIndex(Columns.Folders.FOLDERKEY));
-		name = cur.getString(cur.getColumnIndex(Columns.Items.NAME));
-		parent = cur.getString(cur.getColumnIndex(Columns.Items.PARENT));
-		created = cur.getString(cur.getColumnIndex(Columns.Items.CREATED));
-		inserted = cur.getLong(cur.getColumnIndex(Columns.Items.INSERTED));
-		privacy = cur.getString(cur.getColumnIndex(Columns.Items.PRIVACY));
-		folderCount = cur.getInt(cur.getColumnIndex(Columns.Folders.FOLDERS));
-		fileCount = cur.getInt(cur.getColumnIndex(Columns.Folders.FILES));
-		revision = cur.getInt(cur.getColumnIndex(Columns.Folders.REVISION));
-		epoch = cur.getLong(cur.getColumnIndex(Columns.Folders.EPOCH));
-		dropboxEnabled = cur.getString(cur.getColumnIndex(Columns.Folders.DROPBOX_ENABLED));
-		shared = cur.getString(cur.getColumnIndex(Columns.Folders.SHARED));
 	}
 
 	public void updateDb(SQLiteDatabase db, boolean fullImport) {
@@ -120,38 +108,8 @@ public class Folder extends FolderItem {
 	}
 
 	private void insertFolderInDb(SQLiteDatabase db, Folder folder, boolean isRoot) {
-		// db.execSQL("DELETE FROM " + Mediabase.TABLE_FOLDERS + " WHERE  " +
-		// Columns.Folders.FOLDERKEY + " IN( SELECT  " + Columns.Items.KEY
-		// + " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY +
-		// " = '" + folder.folderKey + "' OR "
-		// + Columns.Items.PARENT + " = '" + folder.folderKey + "')");
-		// db.execSQL("DELETE FROM " + Mediabase.TABLE_FILES + " WHERE  " +
-		// Columns.Files.QUICKKEY + " IN( SELECT  " + Columns.Items.KEY
-		// + " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY +
-		// " = '" + folder.folderKey + "' OR "
-		// + Columns.Items.PARENT + " = '" + folder.folderKey + "')");
-		// db.execSQL("DELETE FROM " + Mediabase.TABLE_ITEMS + " WHERE " +
-		// Columns.Items.KEY + " = '" + folder.folderKey + "' OR "
-		// + Columns.Items.PARENT + " = '" + folder.folderKey + "'");
 
-		long now = (isRoot || folder.folderKey == Folder.ROOT_KEY) ? System.currentTimeMillis() / 1000 : 0;
-
-		if (itemExists(db, folder.folderKey)) {
-			Log.d(TAG, "Should update  " + folder.name);
-		} else {
-			Log.d(TAG, "Inserting " + folder.name);
-			db.execSQL("INSERT INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
-					+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
-					+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + ", " + Columns.Items.INSERTED + ")"
-					+ " VALUES (?,?,?,?,?,?,?, ?, ? , ?)", new Object[] { folder.folderKey, FolderItem.TYPE_FOLDER, folder.parent,
-					folder.name, folder.desc, folder.tags, folder.flag, folder.privacy, folder.created, now });
-
-			db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FOLDERS + "(" + Columns.Folders.FOLDERKEY + "," + Columns.Folders.FOLDERS
-					+ "," + Columns.Folders.SHARED + "," + Columns.Folders.REVISION + "," + Columns.Folders.EPOCH + ","
-					+ Columns.Folders.DROPBOX_ENABLED + "," + Columns.Folders.FILES + ")" + " VALUES (?,?,?,?,?,?,?)", new Object[] {
-					folder.folderKey, folder.folderCount, folder.shared, folder.revision, folder.epoch, folder.dropboxEnabled,
-					folder.fileCount });
-		}
+		folderRecord.save(db);
 		for (Iterator<Folder> it = folder.subFolders.iterator(); it.hasNext();) {
 			Folder f = it.next();
 			insertFolderInDb(db, f, fullImport);

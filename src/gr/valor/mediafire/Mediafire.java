@@ -1,6 +1,7 @@
 package gr.valor.mediafire;
 
 import gr.valor.mediafire.api.Connection;
+import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.tasks.RenewTokenTask;
 
@@ -23,7 +24,7 @@ public class Mediafire extends Application implements PrefConstants {
 	private String password = null;
 	private boolean rememberMe = false;
 	private String sessionToken = null;
-	private Folder currentFolder;
+	private FolderRecord currentFolder;
 	private boolean fullImport = false;
 	private boolean online = false;
 	private boolean onWifi = false;
@@ -158,15 +159,15 @@ public class Mediafire extends Application implements PrefConstants {
 		this.isLoggedIn = isLoggedIn;
 	}
 
-	public Folder getCurrentFolder() {
+	public FolderRecord getCurrentFolder() {
 		if (currentFolder != null) {
 			return currentFolder;
 		} else {
 			Mediabase m = new Mediabase(this);
 			SQLiteDatabase db = m.getReadableDatabase();
-			Folder f = Folder.createRootFolder();
+			FolderRecord f = new FolderRecord();
 			try {
-				f = Folder.getByFolderKey(db, Folder.ROOT_KEY);
+				f = new FolderRecord(db, Folder.ROOT_KEY);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -177,7 +178,7 @@ public class Mediafire extends Application implements PrefConstants {
 		}
 	}
 
-	public void setCurrentFolder(Folder currentFolder) {
+	public void setCurrentFolder(FolderRecord currentFolder) {
 		this.currentFolder = currentFolder;
 	}
 

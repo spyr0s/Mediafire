@@ -8,6 +8,7 @@ import gr.valor.mediafire.R;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.api.MyOfflineFiles;
 import gr.valor.mediafire.binders.FolderViewBinder;
+import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.helpers.ActivitySwipeDetector;
 import gr.valor.mediafire.helpers.SwipeInterface;
@@ -111,7 +112,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 				}
 				if (!validToken) {
 					if (mediafire.isFullImport()) {
-						mediafire.setCurrentFolder(Folder.createRootFolder());
+						mediafire.setCurrentFolder(new FolderRecord());
 						createOfflineList();
 					} else {
 						createOfflineList();
@@ -210,7 +211,8 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			Mediabase mb = new Mediabase(this);
 			SQLiteDatabase db = mb.getReadableDatabase();
 			try {
-				mediafire.setCurrentFolder(Folder.getByFolderKey(db, mediafire.getCurrentFolder().parent));
+				FolderRecord f = new FolderRecord(db, mediafire.getCurrentFolder().parent);
+				mediafire.setCurrentFolder(f);
 				createOfflineList();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -264,7 +266,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	private void getOnlineFolderItems() {
 		Connection connection = new Connection(this);
 		MyOnlineFilesTask onlineFiles = new MyOnlineFilesTask(this, connection);
-		onlineFiles.execute(new Folder[] { mediafire.getCurrentFolder() });
+		onlineFiles.execute(new FolderRecord[] { mediafire.getCurrentFolder() });
 	}
 
 	public void getOfflineFolderItems() {

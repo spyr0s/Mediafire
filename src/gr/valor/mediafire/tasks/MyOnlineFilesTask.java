@@ -1,11 +1,11 @@
 package gr.valor.mediafire.tasks;
 
-import gr.valor.mediafire.File;
-import gr.valor.mediafire.Folder;
 import gr.valor.mediafire.Mediafire;
 import gr.valor.mediafire.activities.FolderActivity;
 import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
+import gr.valor.mediafire.database.FileRecord;
+import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.parser.Elements;
 import gr.valor.mediafire.parser.MyFilesJSONParser;
@@ -22,7 +22,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-public class MyOnlineFilesTask extends AsyncTask<Folder, Void, Folder> implements ApiUrls, Elements {
+public class MyOnlineFilesTask extends AsyncTask<FolderRecord, Void, FolderRecord> implements ApiUrls, Elements {
 	public static final String TAG = "MyOnlineFiles";
 	public String content_filter;
 	public static final String ALL = "all";
@@ -63,7 +63,7 @@ public class MyOnlineFilesTask extends AsyncTask<Folder, Void, Folder> implement
 	}
 
 	@Override
-	protected void onPostExecute(Folder result) {
+	protected void onPostExecute(FolderRecord result) {
 		super.onPostExecute(result);
 
 		try {
@@ -89,8 +89,8 @@ public class MyOnlineFilesTask extends AsyncTask<Folder, Void, Folder> implement
 	}
 
 	@Override
-	protected Folder doInBackground(Folder... params) {
-		Folder folder = params[0];
+	protected FolderRecord doInBackground(FolderRecord... params) {
+		FolderRecord folder = params[0];
 		return getFolderContent(folder);
 	}
 
@@ -102,12 +102,12 @@ public class MyOnlineFilesTask extends AsyncTask<Folder, Void, Folder> implement
 		}
 	}
 
-	private Folder getFolderContent(Folder folder) {
+	private FolderRecord getFolderContent(FolderRecord folder) {
 		String[] types = new String[] { "folders", "files" };
 		currentFolder = folder.name;
 		publishProgress();
-		folder.subFolders = new ArrayList<Folder>();
-		folder.files = new ArrayList<File>();
+		folder.subFolders = new ArrayList<FolderRecord>();
+		folder.files = new ArrayList<FileRecord>();
 		folder.inserted = System.currentTimeMillis() / 1000;
 		for (int i = 0; i < types.length; i++) {
 			InputStream in = null;
@@ -127,9 +127,9 @@ public class MyOnlineFilesTask extends AsyncTask<Folder, Void, Folder> implement
 				}
 				String response = builder.toString();
 				MyFilesJSONParser p = new MyFilesJSONParser(response);
-				Folder current = p.folder;
+				FolderRecord current = p.folder;
 				for (int j = 0; j < current.subFolders.size(); j++) {
-					Folder f = current.subFolders.get(j);
+					FolderRecord f = current.subFolders.get(j);
 					f.parent = folder.folderKey;
 					folder.subFolders.add(f);
 					if (mediafire.isFullImport()) {
@@ -137,7 +137,7 @@ public class MyOnlineFilesTask extends AsyncTask<Folder, Void, Folder> implement
 					}
 				}
 				for (int k = 0; k < current.files.size(); k++) {
-					File f = current.files.get(k);
+					FileRecord f = current.files.get(k);
 					f.parent = folder.folderKey;
 					folder.files.add(f);
 				}

@@ -1,10 +1,8 @@
 package gr.valor.mediafire.activities;
 
-import gr.valor.mediafire.Folder;
 import gr.valor.mediafire.Mediafire;
 import gr.valor.mediafire.R;
-import gr.valor.mediafire.R.id;
-import gr.valor.mediafire.R.menu;
+import gr.valor.mediafire.database.FolderRecord;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -53,7 +51,7 @@ public abstract class BaseActivity extends Activity {
 			break;
 		case R.id.menu_full_import:
 			Log.d(TAG, "Calling menu Full import");
-			mediafire.setCurrentFolder(Folder.createRootFolder());
+			mediafire.setCurrentFolder(new FolderRecord());
 			mediafire.setFullImport(true);
 			intent = new Intent(this, FolderActivity.class);
 			startActivity(intent);
