@@ -1,9 +1,9 @@
 package gr.valor.mediafire.binders;
 
-import gr.valor.mediafire.FolderItem;
 import gr.valor.mediafire.ItemConstants;
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.FolderActivity;
+import gr.valor.mediafire.database.FolderItemRecord;
 import gr.valor.mediafire.helpers.FileIcon;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -24,10 +24,10 @@ public class FolderViewBinder implements SimpleAdapter.ViewBinder {
 			ImageView im = (ImageView) view;
 			Resources res = activity.getResources();
 			Drawable d = null;
-			if (textRepresentation.equals(FolderItem.TYPE_FOLDER) || textRepresentation.equals(FolderItem.TYPE_BACK)) {
+			if (textRepresentation.equals(FolderItemRecord.TYPE_FOLDER) || textRepresentation.equals(FolderItemRecord.TYPE_BACK)) {
 				d = res.getDrawable(R.drawable.icon_folder);
 				im.setImageDrawable(d);
-			} else if (textRepresentation.equals(FolderItem.TYPE_FILE)) {
+			} else if (textRepresentation.equals(FolderItemRecord.TYPE_FILE)) {
 				d = res.getDrawable(R.drawable.icon_file);
 				im.setImageDrawable(d);
 			} else {

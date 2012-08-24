@@ -1,9 +1,9 @@
 package gr.valor.mediafire.api;
 
-import gr.valor.mediafire.File;
-import gr.valor.mediafire.Folder;
-import gr.valor.mediafire.FolderItem;
 import gr.valor.mediafire.database.Columns;
+import gr.valor.mediafire.database.FileRecord;
+import gr.valor.mediafire.database.FolderItemRecord;
+import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.database.Mediabase;
 import android.content.Context;
 import android.database.Cursor;
@@ -21,9 +21,9 @@ public class MyOfflineFiles extends MyFiles {
 		this.db = db;
 	}
 
-	public Folder getFiles(String order) throws Exception {
+	public FolderRecord getFiles(String order) throws Exception {
 		Log.d(TAG, "Getting " + parent + " folder from db");
-		Folder currentFolder = Folder.getByFolderKey(db, parent);
+		FolderRecord currentFolder = new FolderRecord(db, parent);
 		if (order == null) {
 			order = ORDER;
 		}
@@ -40,10 +40,10 @@ public class MyOfflineFiles extends MyFiles {
 		Cursor cur = db.rawQuery(sql, new String[] { parent });
 		while (cur.moveToNext()) {
 			String type = cur.getString(cur.getColumnIndex(Columns.Items.TYPE));
-			if (type.equals(FolderItem.TYPE_FOLDER)) {
-				currentFolder.subFolders.add(new Folder(cur));
+			if (type.equals(FolderItemRecord.TYPE_FOLDER)) {
+				currentFolder.subFolders.add(new FolderRecord(cur));
 			} else {
-				currentFolder.files.add(new File(cur));
+				currentFolder.files.add(new FileRecord(cur));
 			}
 		}
 

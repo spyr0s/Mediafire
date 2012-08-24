@@ -167,7 +167,7 @@ public class Mediafire extends Application implements PrefConstants {
 			SQLiteDatabase db = m.getReadableDatabase();
 			FolderRecord f = new FolderRecord();
 			try {
-				f = new FolderRecord(db, Folder.ROOT_KEY);
+				f = new FolderRecord(db, FolderRecord.ROOT_KEY);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

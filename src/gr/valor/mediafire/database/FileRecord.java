@@ -1,6 +1,5 @@
 package gr.valor.mediafire.database;
 
-import gr.valor.mediafire.FolderItem;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -24,9 +23,27 @@ public class FileRecord extends FolderItemRecord {
 		createFromCursor(cur);
 	}
 
+	public FileRecord(SQLiteDatabase db, String qk) throws Exception {
+		String sql = "SELECT " + Columns.Files.QUICKKEY + ", " + Columns.Items.NAME + ", " + Columns.Items.TYPE + ", "
+				+ Columns.Items.PARENT + ", " + Columns.Items.CREATED + ", " + Columns.Files.DOWNLOADS + ", " + Columns.Files.SIZE + ", "
+				+ Columns.Items.INSERTED + ", " + Columns.Items.FLAG + ", " + Columns.Items.PRIVACY + ", " + Columns.Files.FILETYPE + ", "
+				+ Columns.Files.PASSWORD_PROTECTED + " FROM " + Mediabase.TABLE_ITEMS + " i " + " LEFT JOIN " + Mediabase.TABLE_FILES
+				+ " fi " + " ON i." + Columns.Items.KEY + " = fi." + Columns.Files.QUICKKEY + " WHERE " + Columns.Files.QUICKKEY + " = ? ";
+		Cursor cur = db.rawQuery(sql, new String[] { qk });
+		if (cur.getCount() != 1) {
+			cur.close();
+			throw new Exception(qk + " file not found in database");
+
+		}
+		cur.moveToFirst();
+		createFromCursor(cur);
+		cur.close();
+	}
+
 	@Override
 	protected void createFromCursor(Cursor cur) {
 		quickkey = cur.getString(cur.getColumnIndex(Columns.Files.QUICKKEY));
+		itemType = FolderItemRecord.TYPE_FILE;
 		filename = cur.getString(cur.getColumnIndex(Columns.Items.NAME));
 		parent = cur.getString(cur.getColumnIndex(Columns.Items.PARENT));
 		created = cur.getString(cur.getColumnIndex(Columns.Items.CREATED));
@@ -41,13 +58,13 @@ public class FileRecord extends FolderItemRecord {
 
 	public boolean save(SQLiteDatabase db) {
 
-		if (this.isNew(db, quickkey)) {
+		if (!this.isNew(db, quickkey)) {
 			String queryItems = "UPDATE " + Mediabase.TABLE_ITEMS + " SET " + Columns.Items.KEY + "= ? ," + Columns.Items.TYPE + " = ? ,"
 					+ Columns.Items.PARENT + " = ? , " + Columns.Items.NAME + " = ? ," + Columns.Items.DESC + " =? ," + Columns.Items.TAGS
 					+ "=? , " + Columns.Items.FLAG + "=? ," + Columns.Items.PRIVACY + "=?," + Columns.Items.CREATED + "=? " + " WHERE "
 					+ Columns.Items.KEY + " = ? ";
-			Object[] paramItems = new Object[] { quickkey, FolderItem.TYPE_FILE, parent, filename, desc, tags, flag, privacy, created,
-					quickkey };
+			Object[] paramItems = new Object[] { quickkey, FolderItemRecord.TYPE_FILE, parent, filename, desc, tags, flag, privacy,
+					created, quickkey };
 			db.execSQL(queryItems, paramItems);
 			String queryFolder = "UPDATE " + Mediabase.TABLE_FILES + " SET " + Columns.Files.QUICKKEY + "=?," + Columns.Files.DOWNLOADS
 					+ "=?," + Columns.Files.FILETYPE + "=?," + Columns.Files.PASSWORD_PROTECTED + "=?," + Columns.Files.SIZE + "=? WHERE "
@@ -59,8 +76,8 @@ public class FileRecord extends FolderItemRecord {
 					"INSERT OR IGNORE INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
 							+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
 							+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + " )"
-							+ " VALUES (?,?,?,?,?,?,?,?,?)", new Object[] { quickkey, FolderItem.TYPE_FILE, parent, filename, desc, tags,
-							flag, privacy, created });
+							+ " VALUES (?,?,?,?,?,?,?,?,?)", new Object[] { quickkey, FolderItemRecord.TYPE_FILE, parent, filename, desc,
+							tags, flag, privacy, created });
 
 			db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FILES + "(" + Columns.Files.QUICKKEY + "," + Columns.Files.DOWNLOADS
 					+ "," + Columns.Files.FILETYPE + "," + Columns.Files.PASSWORD_PROTECTED + "," + Columns.Files.SIZE + ")"
@@ -74,7 +91,7 @@ public class FileRecord extends FolderItemRecord {
 		if (pos > 0 && filename.length() > pos) {
 			return filename.substring(pos + 1).toLowerCase();
 		} else {
-			return FolderItem.TYPE_FILE;
+			return FolderItemRecord.TYPE_FILE;
 		}
 
 	}

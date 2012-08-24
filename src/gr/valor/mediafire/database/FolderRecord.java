@@ -1,10 +1,10 @@
 package gr.valor.mediafire.database;
 
-import gr.valor.mediafire.Folder;
-import gr.valor.mediafire.FolderItem;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -68,7 +68,11 @@ public class FolderRecord extends FolderItemRecord {
 	}
 
 	private void insertFolderInDb(SQLiteDatabase db, FolderRecord folderRecord, boolean isRoot) {
-
+		if (isRoot || folderRecord.folderKey == FolderRecord.ROOT_KEY) {
+			folderRecord.inserted = System.currentTimeMillis() / 1000;
+		} else {
+			folderRecord.inserted = 0;
+		}
 		folderRecord.save(db);
 		for (Iterator<FolderRecord> it = folderRecord.subFolders.iterator(); it.hasNext();) {
 			FolderRecord f = it.next();
@@ -84,6 +88,7 @@ public class FolderRecord extends FolderItemRecord {
 	@Override
 	protected void createFromCursor(Cursor cur) {
 		folderKey = cur.getString(cur.getColumnIndex(Columns.Folders.FOLDERKEY));
+		itemType = FolderItemRecord.TYPE_FOLDER;
 		name = cur.getString(cur.getColumnIndex(Columns.Items.NAME));
 		parent = cur.getString(cur.getColumnIndex(Columns.Items.PARENT));
 		created = cur.getString(cur.getColumnIndex(Columns.Items.CREATED));
@@ -98,14 +103,14 @@ public class FolderRecord extends FolderItemRecord {
 	}
 
 	public boolean save(SQLiteDatabase db) {
-		long now = (folderKey == Folder.ROOT_KEY) ? System.currentTimeMillis() / 1000 : 0;
 		if (!this.isNew(db, folderKey)) {
+			Log.d(TAG, "Updating folder " + this.toString() + " " + inserted);
 			String queryItems = "UPDATE " + Mediabase.TABLE_ITEMS + " SET " + Columns.Items.KEY + "= ? ," + Columns.Items.TYPE + " = ? ,"
 					+ Columns.Items.PARENT + " = ? , " + Columns.Items.NAME + " = ? ," + Columns.Items.DESC + " =? ," + Columns.Items.TAGS
-					+ "=? , " + Columns.Items.FLAG + "=? ," + Columns.Items.PRIVACY + "=?," + Columns.Items.CREATED + "=?  " + " WHERE "
-					+ Columns.Items.KEY + " = ? ";
-			Object[] paramItems = new Object[] { folderKey, FolderItem.TYPE_FOLDER, parent, name, desc, tags, flag, privacy, created,
-					folderKey };
+					+ "=? , " + Columns.Items.FLAG + "=? ," + Columns.Items.PRIVACY + "=?," + Columns.Items.CREATED + "=?,  "
+					+ Columns.Items.INSERTED + " = ?  WHERE " + Columns.Items.KEY + " = ? ";
+			Object[] paramItems = new Object[] { folderKey, FolderItemRecord.TYPE_FOLDER, parent, name, desc, tags, flag, privacy, created,
+					inserted, folderKey };
 			db.execSQL(queryItems, paramItems);
 			String queryFolder = "UPDATE " + Mediabase.TABLE_FOLDERS + " SET " + Columns.Folders.FOLDERKEY + " = ? ,"
 					+ Columns.Folders.FOLDERS + "=? ," + Columns.Folders.SHARED + "=? ," + Columns.Folders.REVISION + "=?,"
@@ -114,11 +119,12 @@ public class FolderRecord extends FolderItemRecord {
 			Object[] paramFolders = new Object[] { folderKey, folderCount, shared, revision, epoch, dropboxEnabled, fileCount, folderKey };
 			db.execSQL(queryFolder, paramFolders);
 		} else {
+			Log.d(TAG, "Importing folder " + this.toString() + " " + inserted);
 			db.execSQL("INSERT INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
 					+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
 					+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + ", " + Columns.Items.INSERTED + ")"
-					+ " VALUES (?,?,?,?,?,?,?, ?, ? , ?)", new Object[] { folderKey, FolderItem.TYPE_FOLDER, parent, name, desc, tags,
-					flag, privacy, created, now });
+					+ " VALUES (?,?,?,?,?,?,?, ?, ? , ?)", new Object[] { folderKey, FolderItemRecord.TYPE_FOLDER, parent, name, desc,
+					tags, flag, privacy, created, inserted });
 
 			db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FOLDERS + "(" + Columns.Folders.FOLDERKEY + "," + Columns.Folders.FOLDERS
 					+ "," + Columns.Folders.SHARED + "," + Columns.Folders.REVISION + "," + Columns.Folders.EPOCH + ","
@@ -145,10 +151,10 @@ public class FolderRecord extends FolderItemRecord {
 	public String getFullPath(SQLiteDatabase db) {
 		String path = this.name;
 		try {
-			Folder f = Folder.getByFolderKey(db, this.parent);
+			FolderRecord f = new FolderRecord(db, this.parent);
 			while (f.parent != null) {
 				path = f.name + "/" + path;
-				f = Folder.getByFolderKey(db, f.parent);
+				f = new FolderRecord(db, f.parent);
 			}
 			path = f.name + "/" + path;
 		} catch (Exception e) {
@@ -156,6 +162,59 @@ public class FolderRecord extends FolderItemRecord {
 		}
 		return path;
 
+	}
+
+	public static FolderRecord createBackFolder() {
+		FolderRecord bf = new FolderRecord();
+		bf.name = "...";
+		bf.itemType = TYPE_BACK;
+		bf.privacy = "";
+		return bf;
+	}
+
+	public List<Map<String, String>> getFolderItems() {
+		if (!folderItems.isEmpty()) {
+			folderItems.clear();
+		}
+		if (this.parent != null) {
+			Log.d(TAG, "Adding back header");
+			subFolders.add(0, FolderRecord.createBackFolder());
+
+		}
+		for (Iterator<FolderRecord> it = subFolders.iterator(); it.hasNext();) {
+			FolderRecord folder = it.next();
+			Map<String, String> map = new HashMap<String, String>();
+			map.put(TYPE, folder.itemType);
+			map.put(FOLDERKEY, folder.folderKey);
+			map.put(NAME, folder.name);
+			map.put(CREATED, folder.created);
+			map.put(PRIVACY, folder.privacy);
+			map.put(DOWNLOAD_ICON, NO);
+			map.put(SIZE_ICON, NO);
+			folderItems.add(map);
+		}
+
+		for (Iterator<FileRecord> it = files.iterator(); it.hasNext();) {
+			FileRecord file = it.next();
+			Map<String, String> map = new HashMap<String, String>();
+			map.put(TYPE, file.getFileExtension());
+			map.put(NAME, file.filename);
+			map.put(QUICKKEY, file.quickkey);
+			map.put(CREATED, file.created);
+			map.put(PRIVACY, file.privacy);
+			map.put(DOWNLOADS, String.valueOf(file.downloads));
+			map.put(DOWNLOAD_ICON, YES);
+			map.put(SIZE, file.getSize());
+			map.put(SIZE_ICON, YES);
+			folderItems.add(map);
+		}
+
+		return folderItems;
+	}
+
+	@Override
+	public String toString() {
+		return this.name + " (" + this.folderKey + ")";
 	}
 
 }

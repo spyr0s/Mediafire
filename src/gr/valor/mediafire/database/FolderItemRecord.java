@@ -1,5 +1,7 @@
 package gr.valor.mediafire.database;
 
+import gr.valor.mediafire.ItemConstants;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -7,7 +9,7 @@ import java.util.Map;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-public abstract class FolderItemRecord {
+public abstract class FolderItemRecord implements ItemConstants {
 	public static final String ROOT_NAME = "root";
 	public static final String ROOT_KEY = "rootkey";
 

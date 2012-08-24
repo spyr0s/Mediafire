@@ -27,6 +27,7 @@
             android:label="@string/title_activity_folder" android:icon="@drawable/ic_launcher" android:logo="@drawable/ic_launcher" android:theme="@style/AppTheme">
         </activity>
         <activity android:label="Preferences" android:name=".activities.PrefsActivity" android:icon="@drawable/ic_launcher"></activity>
+        <activity android:name=".activities.ViewFileActivity" android:label="@string/title_view_file_activity"></activity>
     </application>
 
 </manifest>

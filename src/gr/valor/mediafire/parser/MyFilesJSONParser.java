@@ -1,8 +1,8 @@
 package gr.valor.mediafire.parser;
 
-import gr.valor.mediafire.FolderItem;
 import gr.valor.mediafire.api.JSONParser;
 import gr.valor.mediafire.database.FileRecord;
+import gr.valor.mediafire.database.FolderItemRecord;
 import gr.valor.mediafire.database.FolderRecord;
 
 import org.json.JSONArray;
@@ -35,8 +35,8 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 			Log.w(TAG, e.getMessage());
 			throw e;
 		}
-		folder.name = FolderItem.ROOT_NAME;
-		folder.folderKey = FolderItem.ROOT_KEY;
+		folder.name = FolderItemRecord.ROOT_NAME;
+		folder.folderKey = FolderItemRecord.ROOT_KEY;
 		folder.parent = null;
 		folderContent = response.getJSONObject(FOLDERCONTENT);
 		if (folderContent.has(FOLDERS)) {
@@ -61,7 +61,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 				cFolder.folderCount = f.getInt(FOLDER_COUNT);
 				cFolder.folderKey = getStringValue(f, FOLDERKEY);
 				cFolder.isFolder = true;
-				cFolder.parent = getStringValue(f, PARENT_FOLDERKEY, FolderItem.ROOT_KEY);
+				cFolder.parent = getStringValue(f, PARENT_FOLDERKEY, FolderItemRecord.ROOT_KEY);
 				cFolder.privacy = getStringValue(f, PRIVACY);
 				Log.d("INSERT FOLDER IN ROOT", cFolder.descr());
 
@@ -84,7 +84,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 				file.flag = f.getInt(FLAG);
 				file.privacy = getStringValue(f, PRIVACY);
 				file.isFolder = false;
-				file.parent = FolderItem.ROOT_KEY;
+				file.parent = FolderItemRecord.ROOT_KEY;
 				file.privacy = getStringValue(f, PRIVACY);
 				file.tags = getStringValue(f, TAGS);
 				file.quickkey = getStringValue(f, QUICKKEY);

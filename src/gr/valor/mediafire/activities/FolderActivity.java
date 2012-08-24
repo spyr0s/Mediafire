@@ -1,13 +1,12 @@
 package gr.valor.mediafire.activities;
 
 import eu.erikw.PullToRefreshListView;
-import gr.valor.mediafire.File;
-import gr.valor.mediafire.Folder;
-import gr.valor.mediafire.FolderItem;
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.api.MyOfflineFiles;
 import gr.valor.mediafire.binders.FolderViewBinder;
+import gr.valor.mediafire.database.FileRecord;
+import gr.valor.mediafire.database.FolderItemRecord;
 import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.helpers.ActivitySwipeDetector;
@@ -31,6 +30,7 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.RelativeLayout;
@@ -44,10 +44,10 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	public static final String ONLINE = "gr.valor.mediafire.ONLINE";
 	public static final String EMPTY_DB = "gr.valor.mediafire.EMPTY_DB";
 	public static final String FULL_IMPORT = "gr.valor.mediafire.FULL_IMPORT";
-	public Folder folder;
+	public FolderRecord folder;
 
-	private static final String[] FOLDER_FROM = { Folder.TYPE, Folder.NAME, Folder.CREATED, File.DOWNLOAD_ICON, File.DOWNLOADS, File.SIZE,
-			File.PRIVACY };
+	private static final String[] FOLDER_FROM = { FolderRecord.TYPE, FolderRecord.NAME, FolderRecord.CREATED, FileRecord.DOWNLOAD_ICON,
+			FileRecord.DOWNLOADS, FileRecord.SIZE, FileRecord.PRIVACY };
 	private static final int[] FOLDER_TO = { R.id.folder_item_type, R.id.folder_item_name, R.id.folder_item_created,
 			R.id.folder_item_downicon, R.id.folder_item_downloads, R.id.folder_item_size, R.id.folder_item_privacy };
 	List<Map<String, String>> folderItems = new ArrayList<Map<String, String>>();
@@ -193,7 +193,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 
 	@Override
 	public void onBackPressed() {
-		if (mediafire.getCurrentFolder().folderKey.equals(Folder.ROOT_KEY)) {
+		if (mediafire.getCurrentFolder().folderKey.equals(FolderRecord.ROOT_KEY)) {
 			AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 			alertDialog.setTitle("Exit Application?");
 			alertDialog.setMessage("Do you want to exit the application?");
@@ -238,11 +238,11 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 			if (info != null) {
 				Map<String, String> fi = (Map<String, String>) listView.getItemAtPosition(info.position);
-				if (fi.get(FolderItem.TYPE).equals(FolderItem.TYPE_FOLDER)) {
+				if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FOLDER)) {
 					menu.setHeaderTitle("Folder Actions");
 					menu.setHeaderIcon(R.drawable.icon_folder);
 					menu.removeItem(R.id.menu_viewFile);
-				} else if (fi.get(FolderItem.TYPE).equals(FolderItem.TYPE_BACK)) {
+				} else if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_BACK)) {
 
 					menu.removeItem(R.id.menu_viewFile);
 					menu.removeItem(R.id.menu_createFolder);
@@ -253,6 +253,26 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 				}
 
 			}
+		}
+
+	}
+
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		Map<String, String> select = null;
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		if (info != null) {
+			select = (Map<String, String>) listView.getItemAtPosition(info.position);
+		}
+		switch (item.getItemId()) {
+		case R.id.menu_viewFile:
+			Intent intent = new Intent(this, ViewFileActivity.class);
+			intent.putExtra(ViewFileActivity.FILE_QUICKKEY, select.get(FolderItemRecord.QUICKKEY));
+			startActivity(intent);
+			return true;
+
+		default:
+			return super.onContextItemSelected(item);
 		}
 
 	}
@@ -276,7 +296,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		MyOfflineFiles myFiles = new MyOfflineFiles(this, db);
 		myFiles.setParent(mediafire.getCurrentFolder().folderKey);
 		try {
-			Folder curFolder = myFiles.getFiles(null);
+			FolderRecord curFolder = myFiles.getFiles(null);
 			createFolderItems(curFolder);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -284,7 +304,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		}
 	}
 
-	private void createFolderItems(Folder curFolder) {
+	private void createFolderItems(FolderRecord curFolder) {
 		if (curFolder != null) {
 			folderItems = curFolder.getFolderItems();
 		}
