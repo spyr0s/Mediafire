@@ -12,9 +12,9 @@
         android:layout_marginTop="2dp"
         android:layout_weight="0"
         android:orientation="horizontal" >
-
+
         <ImageView
-            android:id="@+id/folder_item_type"
+            android:id="@+id/folder_item_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="8dp"

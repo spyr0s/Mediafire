@@ -1,9 +1,6 @@
 package gr.valor.mediafire.activities;
 
 import gr.valor.mediafire.R;
-import gr.valor.mediafire.R.id;
-import gr.valor.mediafire.R.layout;
-import gr.valor.mediafire.R.menu;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.helpers.Helper;
 import gr.valor.mediafire.tasks.LoginTask;
@@ -18,11 +15,17 @@ import android.widget.Toast;
 
 public class LoginActivity extends BaseActivity {
 	private static final String TAG = "LoginActivity";
+	private EditText et_email;
+	private EditText et_password;
+	private CheckBox cb_remember;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_login);
+		et_email = (EditText) findViewById(R.id.login_username);
+		et_password = (EditText) findViewById(R.id.login_password);
+		cb_remember = (CheckBox) findViewById(R.id.login_remember);
 		if (!mediafire.isOnline()) {
 			showFolders();
 		} else {
@@ -42,6 +45,8 @@ public class LoginActivity extends BaseActivity {
 
 	private void checkCredentials() {
 		if (mediafire.hasSavedCredentials()) {
+			et_email.setText(mediafire.getEmail());
+			et_password.setText(mediafire.getPassword());
 			autoLogin();
 		} else {
 			if (mediafire.isEmptyDb()) {
@@ -78,13 +83,10 @@ public class LoginActivity extends BaseActivity {
 	}
 
 	public void doLogin(View view) {
-		EditText et_email = (EditText) findViewById(R.id.login_username);
 		if (!Helper.isValidEmail(et_email.getText().toString())) {
 			Toast.makeText(this, "This is not a valid email address", Toast.LENGTH_SHORT).show();
 			return;
 		}
-		EditText et_password = (EditText) findViewById(R.id.login_password);
-		CheckBox cb_remember = (CheckBox) findViewById(R.id.login_remember);
 		mediafire.setEmail(et_email.getText().toString());
 		mediafire.setPassword(et_password.getText().toString());
 		mediafire.setRememberMe(cb_remember.isChecked());

@@ -2,19 +2,21 @@ package gr.valor.mediafire.parser;
 
 import gr.valor.mediafire.api.JSONParser;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
 
-public class SessionToken extends JSONParser implements Elements {
-	public static final String TAG = "SessionToken";
-	public String sessionToken = null;
-	private boolean renew;
+public class GetFileLink extends JSONParser implements Elements {
 
-	public SessionToken(String jsonString, boolean renew) {
+	public static final String TAG = "DownloadLink";
+	public String url;
+	private String quickKey;
+
+	public GetFileLink(String jsonString, String quickKey) {
 		this.jsonString = jsonString;
-		this.renew = renew;
+		this.quickKey = quickKey;
 		try {
 			parse();
 		} catch (JSONException e) {
@@ -26,17 +28,22 @@ public class SessionToken extends JSONParser implements Elements {
 	@Override
 	public void parse() throws JSONException {
 		try {
-			Log.d(TAG, "Session json:" + jsonString);
+			Log.d(TAG, "json:" + jsonString);
 			JSONObject obj = new JSONObject(jsonString);
 			response = obj.getJSONObject(RESPONSE);
 			action = response.getString(ACTION);
 			result = response.getString(RESULT);
 			Log.d(TAG, action + " " + result);
-			if (result.equals(SUCCESS) && action.equals(renew ? ACTION_RENEW_SESSION_TOKEN : ACTION_GET_SESSION_TOKEN)) {
-				sessionToken = response.getString(SESSION_TOKEN);
-				Log.d(TAG, "session token " + sessionToken);
+			if (result.equals(SUCCESS) && action.equals(ACTION_GET_FILE_LINK)) {
+				JSONArray links = response.getJSONArray(LINKS);
+				for (int i = 0; i < links.length(); i++) {
+					JSONObject l = (JSONObject) links.get(i);
+					if (l.getString(QUICKKEY).equals(quickKey)) {
+						this.url = l.getString(DIRECT_DOWNLOAD);
+					}
+				}
 			} else {
-				sessionToken = null;
+
 			}
 
 		} catch (JSONException e) {

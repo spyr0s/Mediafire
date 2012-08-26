@@ -46,7 +46,7 @@ public class FileRecord extends FolderItemRecord {
 		itemType = FolderItemRecord.TYPE_FILE;
 		filename = cur.getString(cur.getColumnIndex(Columns.Items.NAME));
 		parent = cur.getString(cur.getColumnIndex(Columns.Items.PARENT));
-		created = cur.getString(cur.getColumnIndex(Columns.Items.CREATED));
+		setCreated(cur.getString(cur.getColumnIndex(Columns.Items.CREATED)));
 		inserted = cur.getLong(cur.getColumnIndex(Columns.Items.CREATED));
 		downloads = cur.getInt(cur.getColumnIndex(Columns.Files.DOWNLOADS));
 		size = cur.getLong(cur.getColumnIndex(Columns.Files.SIZE));
@@ -64,7 +64,7 @@ public class FileRecord extends FolderItemRecord {
 					+ "=? , " + Columns.Items.FLAG + "=? ," + Columns.Items.PRIVACY + "=?," + Columns.Items.CREATED + "=? " + " WHERE "
 					+ Columns.Items.KEY + " = ? ";
 			Object[] paramItems = new Object[] { quickkey, FolderItemRecord.TYPE_FILE, parent, filename, desc, tags, flag, privacy,
-					created, quickkey };
+					getCreated(), quickkey };
 			db.execSQL(queryItems, paramItems);
 			String queryFolder = "UPDATE " + Mediabase.TABLE_FILES + " SET " + Columns.Files.QUICKKEY + "=?," + Columns.Files.DOWNLOADS
 					+ "=?," + Columns.Files.FILETYPE + "=?," + Columns.Files.PASSWORD_PROTECTED + "=?," + Columns.Files.SIZE + "=? WHERE "
@@ -77,7 +77,7 @@ public class FileRecord extends FolderItemRecord {
 							+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
 							+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + " )"
 							+ " VALUES (?,?,?,?,?,?,?,?,?)", new Object[] { quickkey, FolderItemRecord.TYPE_FILE, parent, filename, desc,
-							tags, flag, privacy, created });
+							tags, flag, privacy, getCreated() });
 
 			db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FILES + "(" + Columns.Files.QUICKKEY + "," + Columns.Files.DOWNLOADS
 					+ "," + Columns.Files.FILETYPE + "," + Columns.Files.PASSWORD_PROTECTED + "," + Columns.Files.SIZE + ")"
@@ -106,5 +106,4 @@ public class FileRecord extends FolderItemRecord {
 		}
 		return Long.toString(size);
 	}
-
 }

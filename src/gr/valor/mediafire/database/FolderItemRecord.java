@@ -18,7 +18,7 @@ public abstract class FolderItemRecord implements ItemConstants {
 	public boolean isFolder;
 	public String desc;
 	public String tags;
-	public String created;
+	private String created;
 	public long inserted = 0L;
 	public int flag;
 	public String privacy;
@@ -39,6 +39,21 @@ public abstract class FolderItemRecord implements ItemConstants {
 		}
 		cur.close();
 		return true;
+	}
+
+	/**
+	 * @param created
+	 *            the created to set
+	 */
+	public void setCreated(String created) {
+		this.created = created;
+	}
+
+	/**
+	 * @return the created
+	 */
+	public String getCreated() {
+		return created;
 	}
 
 }

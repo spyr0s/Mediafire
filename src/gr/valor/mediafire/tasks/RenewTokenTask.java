@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -46,10 +47,12 @@ public class RenewTokenTask extends AsyncTask<String, Void, String> implements A
 	@Override
 	protected String doInBackground(String... arg0) {
 		Log.d(TAG, "Connecting...");
+		ArrayList<String> attr = new ArrayList<String>();
+		attr.add(SESSION_TOKEN + "=" + mediafire.getSessionToken());
+		attr.add(RESPONSE_FORMAT + "=" + JSON);
 		InputStream in = null;
 		try {
-			in = connection.connect(DOMAIN + "/" + RENEW_SESSION_TOKEN_URL, new String[] { "session_token=" + mediafire.getSessionToken(),
-					"response_format=json" });
+			in = connection.connect(DOMAIN + "/" + RENEW_SESSION_TOKEN_URL, attr);
 
 			if (in == null) {
 				Toast.makeText(activity, R.string.error_cant_read, Toast.LENGTH_LONG).show();

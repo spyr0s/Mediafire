@@ -5,9 +5,10 @@ public interface Elements {
 	String ACTION = "action";
 	String LOGIN_TOKEN = "login_token";
 	String SESSION_TOKEN = "session_token";
-	String GET_SESSION_TOKEN_ACTION = "user/get_session_token";
-	String RENEW_SESSION_TOKEN_ACTION = "user/renew_session_token";
-	String GET_FOLDER_CONTENT_ACTION = "folder/get_content";
+	String ACTION_GET_SESSION_TOKEN = "user/get_session_token";
+	String ACTION_RENEW_SESSION_TOKEN = "user/renew_session_token";
+	String ACTION_GET_FOLDER_CONTENT = "folder/get_content";
+	String ACTION_GET_FILE_LINK = "file/get_links";
 	String SUCCESS = "Success";
 	String RESULT = "result";
 	String RESPONSE = "response";
@@ -39,4 +40,9 @@ public interface Elements {
 	String FILENAME = "filename";
 	String DOWNLOADS = "downloads";
 	String SIZE = "size";
+
+	// DOWNLOAD FILE
+	String LINKS = "links";
+	String LINK = "link";
+	String DIRECT_DOWNLOAD = "direct_download";
 }

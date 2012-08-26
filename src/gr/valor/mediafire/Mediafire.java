@@ -34,7 +34,6 @@ public class Mediafire extends Application implements PrefConstants {
 	private boolean tokenValid = false;
 	private long sessionTokenCreationTime = 0L;
 	private long cacheDuration = 0L;
-	private SharedPreferences prefs;
 	private boolean closeApp;
 	private boolean forceOnline;
 
@@ -56,7 +55,16 @@ public class Mediafire extends Application implements PrefConstants {
 	}
 
 	public boolean setPref(int type, String pref, Object value) {
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		return setPref(null, type, pref, value);
+	}
+
+	public boolean setPref(String prefFile, int type, String pref, Object value) {
+		SharedPreferences prefs;
+		if (prefFile == null) {
+			prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		} else {
+			prefs = getSharedPreferences(prefFile, MODE_PRIVATE);
+		}
 		SharedPreferences.Editor editor = prefs.edit();
 		switch (type) {
 		case PREF_TYPE_INT:
@@ -93,14 +101,32 @@ public class Mediafire extends Application implements PrefConstants {
 	}
 
 	public Object getPref(int type, String pref, Object def) {
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		return getPref(null, type, pref, def);
+	}
+
+	public Object getPref(String prefFile, int type, String pref, Object def) {
+		SharedPreferences prefs;
+		if (prefFile == null) {
+			prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		} else {
+			prefs = getSharedPreferences(prefFile, MODE_PRIVATE);
+		}
 		switch (type) {
 		case PREF_TYPE_INT:
-			int intDef = Integer.parseInt(String.valueOf(def));
-			return prefs.getInt(pref, intDef);
+			try {
+				return prefs.getLong(pref, Long.parseLong(String.valueOf(def)));
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Integer.parseInt(String.valueOf(def));
+			}
 		case PREF_TYPE_LONG:
-			long longDef = Long.parseLong(String.valueOf(def));
-			return prefs.getLong(pref, longDef);
+			try {
+				return prefs.getLong(pref, Long.parseLong(String.valueOf(def)));
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Long.parseLong(String.valueOf(def));
+			}
 		case PREF_TYPE_BOOLEAN:
 			return prefs.getBoolean(pref, (Boolean) def);
 		case PREF_TYPE_STRING:
@@ -111,32 +137,15 @@ public class Mediafire extends Application implements PrefConstants {
 		return null;
 	}
 
-	public boolean getBooleanPref(String prefName, boolean def) {
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		return prefs.getBoolean(prefName, def);
-
-	}
-
-	public int getIntPref(String prefName, int def) {
-		prefs = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
-		String v = prefs.getString(prefName, "");
-		try {
-			return v.equals("") ? def : Integer.parseInt(v);
-		} catch (NumberFormatException e) {
-			return def;
-		}
-
-	}
-
 	public void removePref(String pref) {
-		prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.remove(pref);
 		editor.commit();
 	}
 
 	public boolean hasSavedCredentials() {
-		return email != null & password != null;
+		return email != null && password != null && !email.equals("null") && !password.equals("null");
 	}
 
 	public long getSessionTokenCreationTime() {
@@ -207,7 +216,7 @@ public class Mediafire extends Application implements PrefConstants {
 	}
 
 	public boolean isAllowGsm() {
-		return getBooleanPref(getString(R.string.pref_gsmKey), false);
+		return (Boolean) getPref(PREF_TYPE_BOOLEAN, getString(R.string.pref_gsmKey), false);
 	}
 
 	public void setAllowGsm(boolean allowGsm) {
@@ -289,6 +298,7 @@ public class Mediafire extends Application implements PrefConstants {
 	 *            the cacheDuration to set
 	 */
 	public void setCacheDuration(long cacheDuration) {
+		setPref(PREF_TYPE_LONG, getString(R.string.pref_cacheKey), cacheDuration);
 		this.cacheDuration = cacheDuration;
 	}
 
@@ -296,7 +306,7 @@ public class Mediafire extends Application implements PrefConstants {
 	 * @return the cacheDuration
 	 */
 	public long getCacheDuration() {
-		return getIntPref(getString(R.string.pref_cacheKey), 0);
+		return (Long) getPref(PREF_TYPE_LONG, getString(R.string.pref_cacheKey), 0L);
 	}
 
 	/**

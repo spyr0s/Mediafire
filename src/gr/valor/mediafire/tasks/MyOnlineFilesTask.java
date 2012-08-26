@@ -103,17 +103,25 @@ public class MyOnlineFilesTask extends AsyncTask<FolderRecord, Void, FolderRecor
 	}
 
 	private FolderRecord getFolderContent(FolderRecord folder) {
-		String[] types = new String[] { "folders", "files" };
+		String[] types = new String[] { FOLDERS, FILES };
+		ArrayList<String> attr = new ArrayList<String>();
+		attr.add(ApiUrls.SESSION_TOKEN + "=" + mediafire.getSessionToken());
+		attr.add(FOLDER_KEY + "=" + folder.folderKey);
+		attr.add(RESPONSE_FORMAT + "=" + JSON);
 		currentFolder = folder.name;
 		publishProgress();
 		folder.subFolders = new ArrayList<FolderRecord>();
 		folder.files = new ArrayList<FileRecord>();
 		folder.inserted = System.currentTimeMillis() / 1000;
 		for (int i = 0; i < types.length; i++) {
+			if (attr.contains(CONTENT_TYPE)) {
+				attr.remove(CONTENT_TYPE);
+			}
+			attr.add(CONTENT_TYPE + "=" + types[i]);
+
 			InputStream in = null;
 			try {
-				in = connection.connect(DOMAIN + "/" + MYFILES_URL, new String[] { "session_token=" + mediafire.getSessionToken(),
-						"folder_key=" + folder.folderKey, "response_format=json", "content_type=" + types[i] });
+				in = connection.connect(DOMAIN + "/" + MYFILES_URL, attr);
 
 				if (in == null) {
 					Log.e(TAG, "Could not read from " + GET_LOGIN_TOKEN_URL);

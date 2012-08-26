@@ -1,12 +1,14 @@
 package gr.valor.mediafire.listeners;
 
 import gr.valor.mediafire.activities.FolderActivity;
+import gr.valor.mediafire.activities.ViewFileActivity;
 import gr.valor.mediafire.database.FolderItemRecord;
 import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.database.Mediabase;
 
 import java.util.Map;
 
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.view.View;
@@ -41,6 +43,9 @@ public class FolderItemsListener implements OnItemClickListener {
 			}
 		} else if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FILE)) {
 			String quickkey = fi.get(FolderItemRecord.QUICKKEY);
+			Intent intent = new Intent(activity, ViewFileActivity.class);
+			intent.putExtra(ViewFileActivity.FILE_QUICKKEY, quickkey);
+			activity.startActivity(intent);
 			Log.d(TAG, "Clicked on " + quickkey);
 		}
 	}

@@ -2,6 +2,8 @@ package gr.valor.mediafire;
 
 public interface PrefConstants {
 
+	String FILE_PREF_DOWNLOAD_LINKS = "download_links";
+
 	int PREF_TYPE_STRING = 0;
 	int PREF_TYPE_INT = 1;
 	int PREF_TYPE_BOOLEAN = 2;
@@ -11,4 +13,5 @@ public interface PrefConstants {
 	String PREF_KEY_PASSWORD = "passwordPref";
 	String PREF_KEY_SESSION_TOKEN = "sessionTokenPref";
 	String PREF_KEY_SESSION_TOKEN_TIME = "sessionTokenTimePref";
+
 }

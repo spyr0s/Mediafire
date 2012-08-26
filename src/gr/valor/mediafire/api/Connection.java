@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -19,6 +21,7 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.DefaultHttpClient;
+
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -37,7 +40,7 @@ public class Connection extends AsyncTask<Object, String, String> implements Api
 		this.context = context;
 	}
 
-	public InputStream connect(String stUrl, String[] params) throws IOException {
+	public InputStream connect(String stUrl, ArrayList<String> params) throws IOException {
 		stUrl += "?" + Helper.implode(params, "&");
 		Log.d(TAG, "Connecting to url:" + stUrl);
 		InputStream is = null;

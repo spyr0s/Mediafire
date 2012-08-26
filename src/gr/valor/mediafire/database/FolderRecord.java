@@ -70,10 +70,13 @@ public class FolderRecord extends FolderItemRecord {
 	private void insertFolderInDb(SQLiteDatabase db, FolderRecord folderRecord, boolean isRoot) {
 		if (isRoot || folderRecord.folderKey == FolderRecord.ROOT_KEY) {
 			folderRecord.inserted = System.currentTimeMillis() / 1000;
+			// Check for deleted items
+			removeDeletedItems(db, folderRecord);
 		} else {
 			folderRecord.inserted = 0;
 		}
 		folderRecord.save(db);
+
 		for (Iterator<FolderRecord> it = folderRecord.subFolders.iterator(); it.hasNext();) {
 			FolderRecord f = it.next();
 			insertFolderInDb(db, f, fullImport);
@@ -85,13 +88,52 @@ public class FolderRecord extends FolderItemRecord {
 
 	}
 
+	private void removeDeletedItems(SQLiteDatabase db, FolderRecord folderRecord) {
+		Cursor c = db.query(Mediabase.TABLE_ITEMS, new String[] { Columns.Items.KEY, Columns.Items.TYPE }, Columns.Items.PARENT + " = ?",
+				new String[] { folderRecord.folderKey }, null, null, null, null);
+		while (c.moveToNext()) {
+			String key = c.getString(c.getColumnIndex(Columns.Items.KEY));
+			String type = c.getString(c.getColumnIndex(Columns.Items.TYPE));
+			boolean fileExists = false;
+			// Search in folders
+			if (type.equals(FolderItemRecord.TYPE_FOLDER)) {
+				for (Iterator<FolderRecord> it = folderRecord.subFolders.iterator(); it.hasNext();) {
+					FolderRecord f = it.next();
+					if (key.equals(f.folderKey)) {
+						fileExists = true;
+						break;
+					}
+				}
+			}
+			// Search in files
+			if (type.equals(FolderItemRecord.TYPE_FILE)) {
+				for (Iterator<FileRecord> it = folderRecord.files.iterator(); it.hasNext();) {
+					FileRecord f = it.next();
+					if (key.equals(f.quickkey)) {
+						fileExists = true;
+						break;
+					}
+				}
+			}
+			if (!fileExists) {
+				db.delete(Mediabase.TABLE_ITEMS, Columns.Items.KEY + " = ? ", new String[] { key });
+				if (type.equals(FolderItemRecord.TYPE_FOLDER)) {
+					db.delete(Mediabase.TABLE_FOLDERS, Columns.Folders.FOLDERKEY + " = ? ", new String[] { key });
+				} else if (type.equals(FolderItemRecord.TYPE_FILE)) {
+					db.delete(Mediabase.TABLE_FILES, Columns.Files.QUICKKEY + " = ? ", new String[] { key });
+				}
+			}
+		}
+		c.close();
+	}
+
 	@Override
 	protected void createFromCursor(Cursor cur) {
 		folderKey = cur.getString(cur.getColumnIndex(Columns.Folders.FOLDERKEY));
 		itemType = FolderItemRecord.TYPE_FOLDER;
 		name = cur.getString(cur.getColumnIndex(Columns.Items.NAME));
 		parent = cur.getString(cur.getColumnIndex(Columns.Items.PARENT));
-		created = cur.getString(cur.getColumnIndex(Columns.Items.CREATED));
+		setCreated(cur.getString(cur.getColumnIndex(Columns.Items.CREATED)));
 		inserted = cur.getLong(cur.getColumnIndex(Columns.Items.INSERTED));
 		privacy = cur.getString(cur.getColumnIndex(Columns.Items.PRIVACY));
 		folderCount = cur.getInt(cur.getColumnIndex(Columns.Folders.FOLDERS));
@@ -109,7 +151,7 @@ public class FolderRecord extends FolderItemRecord {
 					+ Columns.Items.PARENT + " = ? , " + Columns.Items.NAME + " = ? ," + Columns.Items.DESC + " =? ," + Columns.Items.TAGS
 					+ "=? , " + Columns.Items.FLAG + "=? ," + Columns.Items.PRIVACY + "=?," + Columns.Items.CREATED + "=?,  "
 					+ Columns.Items.INSERTED + " = ?  WHERE " + Columns.Items.KEY + " = ? ";
-			Object[] paramItems = new Object[] { folderKey, FolderItemRecord.TYPE_FOLDER, parent, name, desc, tags, flag, privacy, created,
+			Object[] paramItems = new Object[] { folderKey, FolderItemRecord.TYPE_FOLDER, parent, name, desc, tags, flag, privacy, getCreated(),
 					inserted, folderKey };
 			db.execSQL(queryItems, paramItems);
 			String queryFolder = "UPDATE " + Mediabase.TABLE_FOLDERS + " SET " + Columns.Folders.FOLDERKEY + " = ? ,"
@@ -124,7 +166,7 @@ public class FolderRecord extends FolderItemRecord {
 					+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
 					+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + ", " + Columns.Items.INSERTED + ")"
 					+ " VALUES (?,?,?,?,?,?,?, ?, ? , ?)", new Object[] { folderKey, FolderItemRecord.TYPE_FOLDER, parent, name, desc,
-					tags, flag, privacy, created, inserted });
+					tags, flag, privacy, getCreated(), inserted });
 
 			db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FOLDERS + "(" + Columns.Folders.FOLDERKEY + "," + Columns.Folders.FOLDERS
 					+ "," + Columns.Folders.SHARED + "," + Columns.Folders.REVISION + "," + Columns.Folders.EPOCH + ","
@@ -137,7 +179,7 @@ public class FolderRecord extends FolderItemRecord {
 
 	public String descr() {
 		return "[folderkey:" + this.folderKey + ", parent:" + this.parent + ", name: " + this.name + ", desc:" + this.desc + ", tags:"
-				+ this.tags + ", created:" + this.created + "]";
+				+ this.tags + ", created:" + this.getCreated() + "]";
 	}
 
 	public boolean isCached(long cacheDuration) {
@@ -185,9 +227,10 @@ public class FolderRecord extends FolderItemRecord {
 			FolderRecord folder = it.next();
 			Map<String, String> map = new HashMap<String, String>();
 			map.put(TYPE, folder.itemType);
+			map.put(ICON, TYPE_FOLDER);
 			map.put(FOLDERKEY, folder.folderKey);
 			map.put(NAME, folder.name);
-			map.put(CREATED, folder.created);
+			map.put(CREATED, folder.getCreated());
 			map.put(PRIVACY, folder.privacy);
 			map.put(DOWNLOAD_ICON, NO);
 			map.put(SIZE_ICON, NO);
@@ -197,10 +240,11 @@ public class FolderRecord extends FolderItemRecord {
 		for (Iterator<FileRecord> it = files.iterator(); it.hasNext();) {
 			FileRecord file = it.next();
 			Map<String, String> map = new HashMap<String, String>();
-			map.put(TYPE, file.getFileExtension());
+			map.put(ICON, file.getFileExtension());
+			map.put(TYPE, TYPE_FILE);
 			map.put(NAME, file.filename);
 			map.put(QUICKKEY, file.quickkey);
-			map.put(CREATED, file.created);
+			map.put(CREATED, file.getCreated());
 			map.put(PRIVACY, file.privacy);
 			map.put(DOWNLOADS, String.valueOf(file.downloads));
 			map.put(DOWNLOAD_ICON, YES);

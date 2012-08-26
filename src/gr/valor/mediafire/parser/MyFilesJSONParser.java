@@ -30,7 +30,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 
 	public void parse() throws JSONException {
 		try {
-			checkAction(GET_FOLDER_CONTENT_ACTION);
+			checkAction(ACTION_GET_FOLDER_CONTENT);
 		} catch (JSONException e) {
 			Log.w(TAG, e.getMessage());
 			throw e;
@@ -48,7 +48,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 				Log.d("XML", f.toString());
 				FolderRecord cFolder = new FolderRecord();
 				cFolder.name = getStringValue(f, NAME);
-				cFolder.created = getStringValue(f, CREATED);
+				cFolder.setCreated(getStringValue(f, CREATED));
 				cFolder.desc = getStringValue(f, DESC);
 				cFolder.tags = getStringValue(f, TAGS);
 				cFolder.flag = f.getInt(FLAG);
@@ -74,7 +74,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 				JSONObject f = (JSONObject) files.get(i);
 				Log.d("XML", f.toString());
 				FileRecord file = new FileRecord();
-				file.created = getStringValue(f, CREATED);
+				file.setCreated(getStringValue(f, CREATED));
 				file.desc = getStringValue(f, DESC);
 				file.downloads = f.getInt(DOWNLOADS);
 				file.filename = getStringValue(f, FILENAME);

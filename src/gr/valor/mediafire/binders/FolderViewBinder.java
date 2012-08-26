@@ -20,7 +20,7 @@ public class FolderViewBinder implements SimpleAdapter.ViewBinder {
 	}
 
 	public boolean setViewValue(View view, Object data, String textRepresentation) {
-		if (view.getId() == R.id.folder_item_type) {
+		if (view.getId() == R.id.folder_item_icon) {
 			ImageView im = (ImageView) view;
 			Resources res = activity.getResources();
 			Drawable d = null;

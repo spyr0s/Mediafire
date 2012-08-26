@@ -2,6 +2,7 @@ package gr.valor.mediafire.activities;
 
 import eu.erikw.PullToRefreshListView;
 import gr.valor.mediafire.R;
+import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.api.MyOfflineFiles;
 import gr.valor.mediafire.binders.FolderViewBinder;
@@ -15,6 +16,7 @@ import gr.valor.mediafire.listeners.FolderItemsListener;
 import gr.valor.mediafire.listeners.FolderItemsLongClickListener;
 import gr.valor.mediafire.listeners.FolderRefreshListener;
 import gr.valor.mediafire.tasks.MyOnlineFilesTask;
+import gr.valor.mediafire.tasks.UpdateFileTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +48,9 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	public static final String FULL_IMPORT = "gr.valor.mediafire.FULL_IMPORT";
 	public FolderRecord folder;
 
-	private static final String[] FOLDER_FROM = { FolderRecord.TYPE, FolderRecord.NAME, FolderRecord.CREATED, FileRecord.DOWNLOAD_ICON,
+	private static final String[] FOLDER_FROM = { FolderRecord.ICON, FolderRecord.NAME, FolderRecord.CREATED, FileRecord.DOWNLOAD_ICON,
 			FileRecord.DOWNLOADS, FileRecord.SIZE, FileRecord.PRIVACY };
-	private static final int[] FOLDER_TO = { R.id.folder_item_type, R.id.folder_item_name, R.id.folder_item_created,
+	private static final int[] FOLDER_TO = { R.id.folder_item_icon, R.id.folder_item_name, R.id.folder_item_created,
 			R.id.folder_item_downicon, R.id.folder_item_downloads, R.id.folder_item_size, R.id.folder_item_privacy };
 	List<Map<String, String>> folderItems = new ArrayList<Map<String, String>>();
 	SimpleAdapter folderAdapter;
@@ -158,7 +160,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 
 	public void createList() {
 		Mediabase m = new Mediabase(this);
-		setTitle("Mediafire - " + mediafire.getCurrentFolder().name);
+		setTitle("Folder - " + mediafire.getCurrentFolder().name);
 		SQLiteDatabase db = m.getReadableDatabase();
 		String path = mediafire.getCurrentFolder().getFullPath(db);
 		((TextView) findViewById(R.id.listView_title)).setText(path);
@@ -238,10 +240,16 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 			if (info != null) {
 				Map<String, String> fi = (Map<String, String>) listView.getItemAtPosition(info.position);
+				if (fi.get(FolderItemRecord.PRIVACY).equals(FolderItemRecord.PRIVACY_PRIVATE)) {
+					menu.removeItem(R.id.menu_make_private);
+				} else {
+					menu.removeItem(R.id.menu_make_public);
+				}
 				if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FOLDER)) {
 					menu.setHeaderTitle("Folder Actions");
 					menu.setHeaderIcon(R.drawable.icon_folder);
 					menu.removeItem(R.id.menu_viewFile);
+
 				} else if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_BACK)) {
 
 					menu.removeItem(R.id.menu_viewFile);
@@ -266,9 +274,29 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		}
 		switch (item.getItemId()) {
 		case R.id.menu_viewFile:
-			Intent intent = new Intent(this, ViewFileActivity.class);
-			intent.putExtra(ViewFileActivity.FILE_QUICKKEY, select.get(FolderItemRecord.QUICKKEY));
-			startActivity(intent);
+			Intent viewFileIntent = new Intent(this, ViewFileActivity.class);
+			viewFileIntent.putExtra(ViewFileActivity.FILE_QUICKKEY, select.get(FolderItemRecord.QUICKKEY));
+			startActivity(viewFileIntent);
+			return true;
+		case R.id.menu_make_private:
+		case R.id.menu_make_public:
+			if (!mediafire.isOnline()) {
+				Toast.makeText(this, "There is no internet connection", Toast.LENGTH_SHORT).show();
+				return false;
+			}
+			ArrayList<String> attr = new ArrayList<String>();
+			attr.add(ApiUrls.QUICKKEY + "=" + select.get(FolderItemRecord.QUICKKEY));
+			attr.add(ApiUrls.PRIVACY + "="
+					+ (select.get(FolderItemRecord.PRIVACY).equals(FolderItemRecord.PRIVACY_PRIVATE) ? ApiUrls.PUBLIC : ApiUrls.PRIVATE));
+			if (select.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FILE)) {
+				Connection connection = new Connection(this);
+				UpdateFileTask update = new UpdateFileTask(this, connection, attr);
+				update.execute();
+
+			} else {
+
+			}
+
 			return true;
 
 		default:

@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
@@ -66,10 +67,15 @@ public class LoginTask extends AsyncTask<String, Void, String> implements ApiUrl
 	@Override
 	protected String doInBackground(String... arg0) {
 		Log.d(TAG, "Connecting...");
+		ArrayList<String> attr = new ArrayList<String>();
+		attr.add(EMAIL + "=" + email);
+		attr.add(PASSWORD + "=" + password);
+		attr.add(APPLICATION_ID + "=" + APP_ID);
+		attr.add(SIGNATURE + "=" + Helper.getSignature(email, password));
+		attr.add(RESPONSE_FORMAT + "=" + JSON);
 		InputStream in = null;
 		try {
-			in = connection.connect(DOMAIN + "/" + GET_SESSION_TOKEN_URL, new String[] { "email=" + email, "password=" + password,
-					"application_id=" + APP_ID, "signature=" + Helper.getSignature(email, password), "response_format=json" });
+			in = connection.connect(DOMAIN + "/" + GET_SESSION_TOKEN_URL, attr);
 
 			if (in == null) {
 				Toast.makeText(activity, R.string.error_cant_read, Toast.LENGTH_LONG).show();

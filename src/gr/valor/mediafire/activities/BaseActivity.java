@@ -4,22 +4,26 @@ import gr.valor.mediafire.Mediafire;
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.database.FolderRecord;
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.Window;
 
 public abstract class BaseActivity extends Activity {
 	public Mediafire mediafire;
+	public BroadcastReceiver receiver;
+	public long enqueue;
+	public DownloadManager dm;
 	public static final String TAG = "BaseActivity";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+		// this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		mediafire = (Mediafire) getApplication();
 	}
 

@@ -13,7 +13,9 @@ public interface ItemConstants {
 	String CREATED = "created";
 	String PRIVACY = "privacy";
 	String NAME = "name";
+	String ICON = "icon";
 	String TYPE = "type";
+	String EXTENSION = "extension";
 	String TYPE_FOLDER = "folder";
 	String TYPE_FILE = "file";
 	String TYPE_BACK = "back";
