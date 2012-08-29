@@ -5,13 +5,16 @@ import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.tasks.RenewTokenTask;
 
+import java.io.File;
 import java.util.concurrent.ExecutionException;
 
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 public class Mediafire extends Application implements PrefConstants {
 	public static final String TAG = "Mediafire";
@@ -36,6 +39,8 @@ public class Mediafire extends Application implements PrefConstants {
 	private int cacheDuration = 0;
 	private boolean closeApp;
 	private boolean forceOnline;
+
+	private String downloadPath;
 
 	@Override
 	public void onCreate() {
@@ -338,6 +343,49 @@ public class Mediafire extends Application implements PrefConstants {
 	 */
 	public boolean isForceOnline() {
 		return forceOnline;
+	}
+
+	public void setDownloadPath(String path) {
+		this.downloadPath = path;
+	}
+
+	public String getDownloadPath() {
+		if (isExternalStoragePresent()) {
+			String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/"
+					+ this.downloadPath;
+			if (!(new File(path).exists())) {
+				new File(path).mkdirs();
+			}
+			return path;
+		}
+		return null;
+
+	}
+
+	private boolean isExternalStoragePresent() {
+
+		boolean mExternalStorageAvailable = false;
+		boolean mExternalStorageWriteable = false;
+		String state = Environment.getExternalStorageState();
+
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+			// We can read and write the media
+			mExternalStorageAvailable = mExternalStorageWriteable = true;
+		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+			// We can only read the media
+			mExternalStorageAvailable = true;
+			mExternalStorageWriteable = false;
+		} else {
+			// Something else is wrong. It may be one of many other states, but
+			// all we need
+			// to know is we can neither read nor write
+			mExternalStorageAvailable = mExternalStorageWriteable = false;
+		}
+		if (!((mExternalStorageAvailable) && (mExternalStorageWriteable))) {
+			Toast.makeText(getApplicationContext(), "SD card not present", Toast.LENGTH_LONG).show();
+
+		}
+		return (mExternalStorageAvailable) && (mExternalStorageWriteable);
 	}
 
 }

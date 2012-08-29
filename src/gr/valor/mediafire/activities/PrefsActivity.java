@@ -65,12 +65,17 @@ public class PrefsActivity extends PreferenceActivity implements OnSharedPrefere
 		if (p instanceof ListPreference) {
 			ListPreference listPref = (ListPreference) p;
 			String v = listPref.getEntry() != null ? listPref.getEntry().toString() : "";
-			p.setSummary(listPref.getDialogTitle() + ": " + v);
+			String sep = ": ";
+			p.setSummary(listPref.getDialogTitle() + sep + v);
 		}
 		if (p instanceof EditTextPreference) {
 			EditTextPreference editTextPref = (EditTextPreference) p;
 			String v = editTextPref.getText() != null ? editTextPref.getText() : "";
-			p.setSummary(editTextPref.getDialogMessage() + ": " + v);
+			String sep = ": ";
+			if (p.getKey().equals(getString(R.string.pref_downloadDirKey))) {
+				sep = "";
+			}
+			p.setSummary(editTextPref.getDialogMessage() + sep + v);
 		}
 
 	}
@@ -98,6 +103,9 @@ public class PrefsActivity extends PreferenceActivity implements OnSharedPrefere
 		} else if (key.equals(getString(R.string.pref_gsmKey))) {
 			CheckBoxPreference cb = (CheckBoxPreference) pref;
 			mediafire.setAllowGsm(cb.isChecked());
+		} else if (key.equals(getString(R.string.pref_downloadDirKey))) {
+			EditTextPreference t = (EditTextPreference) pref;
+			mediafire.setDownloadPath(t.getText());
 		}
 	}
 

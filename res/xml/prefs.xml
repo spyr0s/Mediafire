@@ -15,5 +15,6 @@
         android:summaryOff="@string/pref_gsmSumOff"
         android:summaryOn="@string/pref_gsmSumOn"
         android:title="@string/pref_gsm" />
+    <EditTextPreference android:dialogMessage="@string/pref_downloadDirDialog" android:key="@string/pref_downloadDirKey" android:dialogTitle="@string/pref_downloadDir" android:summary="@string/pref_downloadDirSum" android:title="@string/pref_downloadDir" android:defaultValue="mediafire"/>
 
 </PreferenceScreen>

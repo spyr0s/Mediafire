@@ -23,7 +23,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -61,9 +60,14 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 			Log.d(TAG, "Saving link: " + url);
 			mediafire.setPref(PrefConstants.FILE_PREF_DOWNLOAD_LINKS, PrefConstants.PREF_TYPE_STRING, activity.fileRecord.quickkey, url);
 			activity.dm = (DownloadManager) activity.getSystemService(activity.DOWNLOAD_SERVICE);
+			final String orFilename = activity.fileRecord.filename;
 			saveFilename = activity.fileRecord.filename;
-			if (new File(Environment.getExternalStorageDirectory().getPath() + "/" + Environment.DIRECTORY_DOWNLOADS + "/"
-					+ activity.fileRecord.filename).exists()) {
+			final String path = mediafire.getDownloadPath();
+			if (path == null) {
+				return;
+			}
+			final File file = new File(path + "/" + activity.fileRecord.filename);
+			if (file.exists()) {
 				AlertDialog.Builder alert = new AlertDialog.Builder(activity);
 				alert.setTitle("The file already exists");
 				alert.setMessage("Save the file as:");
@@ -73,7 +77,10 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 				alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int whichButton) {
 						saveFilename = newFilename.getText().toString();
-						Log.d(TAG, "new Filename : " + saveFilename);
+						if (saveFilename.equals(orFilename)) {
+							file.renameTo(new File(path + "/" + orFilename + ".tmp"));
+						}
+						Log.d(TAG, "Downloading to : " + path + "/" + saveFilename);
 						downloadFile(url);
 					}
 				});
@@ -92,8 +99,8 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 	}
 
 	private void downloadFile(String url) {
-		Request request = new Request(Uri.parse(url)).setTitle("Downloading " + saveFilename).setDestinationInExternalPublicDir(
-				Environment.DIRECTORY_DOWNLOADS, saveFilename);
+		File file = new File(mediafire.getDownloadPath() + "/" + saveFilename);
+		Request request = new Request(Uri.parse(url)).setTitle("Downloading " + saveFilename).setDestinationUri(Uri.fromFile(file));
 
 		activity.enqueue = activity.dm.enqueue(request);
 		Mediabase db = new Mediabase(activity);
