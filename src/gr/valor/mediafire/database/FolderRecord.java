@@ -151,8 +151,8 @@ public class FolderRecord extends FolderItemRecord {
 					+ Columns.Items.PARENT + " = ? , " + Columns.Items.NAME + " = ? ," + Columns.Items.DESC + " =? ," + Columns.Items.TAGS
 					+ "=? , " + Columns.Items.FLAG + "=? ," + Columns.Items.PRIVACY + "=?," + Columns.Items.CREATED + "=?,  "
 					+ Columns.Items.INSERTED + " = ?  WHERE " + Columns.Items.KEY + " = ? ";
-			Object[] paramItems = new Object[] { folderKey, FolderItemRecord.TYPE_FOLDER, parent, name, desc, tags, flag, privacy, getCreated(),
-					inserted, folderKey };
+			Object[] paramItems = new Object[] { folderKey, FolderItemRecord.TYPE_FOLDER, parent, name, desc, tags, flag, privacy,
+					getCreated(), inserted, folderKey };
 			db.execSQL(queryItems, paramItems);
 			String queryFolder = "UPDATE " + Mediabase.TABLE_FOLDERS + " SET " + Columns.Folders.FOLDERKEY + " = ? ,"
 					+ Columns.Folders.FOLDERS + "=? ," + Columns.Folders.SHARED + "=? ," + Columns.Folders.REVISION + "=?,"
@@ -210,7 +210,7 @@ public class FolderRecord extends FolderItemRecord {
 		FolderRecord bf = new FolderRecord();
 		bf.name = "...";
 		bf.itemType = TYPE_BACK;
-		bf.privacy = "";
+		bf.privacy = PRIVACY_INVISIBLE;
 		return bf;
 	}
 
@@ -240,16 +240,7 @@ public class FolderRecord extends FolderItemRecord {
 		for (Iterator<FileRecord> it = files.iterator(); it.hasNext();) {
 			FileRecord file = it.next();
 			Map<String, String> map = new HashMap<String, String>();
-			map.put(ICON, file.getFileExtension());
-			map.put(TYPE, TYPE_FILE);
-			map.put(NAME, file.filename);
-			map.put(QUICKKEY, file.quickkey);
-			map.put(CREATED, file.getCreated());
-			map.put(PRIVACY, file.privacy);
-			map.put(DOWNLOADS, String.valueOf(file.downloads));
-			map.put(DOWNLOAD_ICON, YES);
-			map.put(SIZE, file.getSize());
-			map.put(SIZE_ICON, YES);
+			file.updateAdapterItem(map);
 			folderItems.add(map);
 		}
 

@@ -33,7 +33,7 @@ public class Mediafire extends Application implements PrefConstants {
 	private boolean allowGsm = false;
 	private boolean tokenValid = false;
 	private long sessionTokenCreationTime = 0L;
-	private long cacheDuration = 0L;
+	private int cacheDuration = 0;
 	private boolean closeApp;
 	private boolean forceOnline;
 
@@ -114,7 +114,7 @@ public class Mediafire extends Application implements PrefConstants {
 		switch (type) {
 		case PREF_TYPE_INT:
 			try {
-				return prefs.getLong(pref, Long.parseLong(String.valueOf(def)));
+				return prefs.getInt(pref, Integer.parseInt(String.valueOf(def)));
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -297,16 +297,17 @@ public class Mediafire extends Application implements PrefConstants {
 	 * @param cacheDuration
 	 *            the cacheDuration to set
 	 */
-	public void setCacheDuration(long cacheDuration) {
-		setPref(PREF_TYPE_LONG, getString(R.string.pref_cacheKey), cacheDuration);
+	public void setCacheDuration(int cacheDuration) {
+		setPref(PREF_TYPE_STRING, getString(R.string.pref_cacheKey), String.valueOf(cacheDuration));
 		this.cacheDuration = cacheDuration;
 	}
 
 	/**
 	 * @return the cacheDuration
 	 */
-	public long getCacheDuration() {
-		return (Long) getPref(PREF_TYPE_LONG, getString(R.string.pref_cacheKey), 0L);
+	public int getCacheDuration() {
+		return Integer.parseInt(String.valueOf(getPref(PREF_TYPE_STRING, getString(R.string.pref_cacheKey), "0")));
+
 	}
 
 	/**

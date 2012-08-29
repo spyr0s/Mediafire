@@ -79,6 +79,10 @@ public class ViewFileActivity extends BaseActivity {
 
 	}
 
+	public TextView getViewDownloads() {
+		return viewDownloads;
+	}
+
 	private void setIcon() {
 		Resources res = getResources();
 		Drawable d = null;

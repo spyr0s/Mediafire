@@ -13,6 +13,7 @@ import android.widget.SimpleAdapter;
 
 public class FolderViewBinder implements SimpleAdapter.ViewBinder {
 
+	private static final String TAG = "FolderViewBinder";
 	private FolderActivity activity;
 
 	public FolderViewBinder(FolderActivity activity) {
@@ -45,15 +46,16 @@ public class FolderViewBinder implements SimpleAdapter.ViewBinder {
 
 			return true;
 		} else if (view.getId() == R.id.folder_item_privacy) {
-			String img = "privacy_" + textRepresentation;
+			String img;
+			if (textRepresentation == FolderItemRecord.PRIVACY_INVISIBLE) {
+				img = FolderItemRecord.PRIVACY_INVISIBLE;
+			} else {
+				img = "privacy_" + (textRepresentation.equals("") ? FolderItemRecord.PRIVACY_PUBLIC : textRepresentation);
+			}
 			img = img.replaceAll(" ", "").toLowerCase();
 			FileIcon icon = new FileIcon(img, activity);
 			int r = icon.getIcon();
-			if (r == 0) {
-				((ImageView) view).setVisibility(View.INVISIBLE);
-			} else {
-				((ImageView) view).setImageResource(r);
-			}
+			((ImageView) view).setImageResource(r);
 			return true;
 		} else if (view.getId() == R.id.folder_item_downicon) {
 			if (textRepresentation.equals(ItemConstants.NO)) {

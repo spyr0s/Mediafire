@@ -9,6 +9,7 @@ public interface Elements {
 	String ACTION_RENEW_SESSION_TOKEN = "user/renew_session_token";
 	String ACTION_GET_FOLDER_CONTENT = "folder/get_content";
 	String ACTION_GET_FILE_LINK = "file/get_links";
+	String ACTION_UPDATE_FILE = "file/update";
 	String SUCCESS = "Success";
 	String RESULT = "result";
 	String RESPONSE = "response";

@@ -1,6 +1,5 @@
 package gr.valor.mediafire.parser;
 
-import gr.valor.mediafire.api.JSONParser;
 import gr.valor.mediafire.database.FileRecord;
 import gr.valor.mediafire.database.FolderItemRecord;
 import gr.valor.mediafire.database.FolderRecord;

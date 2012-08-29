@@ -52,8 +52,8 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			FileRecord.DOWNLOADS, FileRecord.SIZE, FileRecord.PRIVACY };
 	private static final int[] FOLDER_TO = { R.id.folder_item_icon, R.id.folder_item_name, R.id.folder_item_created,
 			R.id.folder_item_downicon, R.id.folder_item_downloads, R.id.folder_item_size, R.id.folder_item_privacy };
-	List<Map<String, String>> folderItems = new ArrayList<Map<String, String>>();
-	SimpleAdapter folderAdapter;
+	public List<Map<String, String>> folderItems = new ArrayList<Map<String, String>>();
+	public SimpleAdapter folderAdapter;
 	private int folderResource = R.layout.folder_item;
 	public TextView emptyList;
 	View.OnTouchListener gestureListener;
@@ -240,10 +240,10 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
 			if (info != null) {
 				Map<String, String> fi = (Map<String, String>) listView.getItemAtPosition(info.position);
-				if (fi.get(FolderItemRecord.PRIVACY).equals(FolderItemRecord.PRIVACY_PRIVATE)) {
-					menu.removeItem(R.id.menu_make_private);
-				} else {
+				if (fi.get(FolderItemRecord.PRIVACY).equals(FolderItemRecord.PRIVACY_PUBLIC)) {
 					menu.removeItem(R.id.menu_make_public);
+				} else {
+					menu.removeItem(R.id.menu_make_private);
 				}
 				if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FOLDER)) {
 					menu.setHeaderTitle("Folder Actions");
@@ -285,13 +285,26 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 				return false;
 			}
 			ArrayList<String> attr = new ArrayList<String>();
-			attr.add(ApiUrls.QUICKKEY + "=" + select.get(FolderItemRecord.QUICKKEY));
-			attr.add(ApiUrls.PRIVACY + "="
-					+ (select.get(FolderItemRecord.PRIVACY).equals(FolderItemRecord.PRIVACY_PRIVATE) ? ApiUrls.PUBLIC : ApiUrls.PRIVATE));
+			String quickkey = select.get(FolderItemRecord.QUICKKEY);
+			String privacy = (select.get(FolderItemRecord.PRIVACY).equals(FolderItemRecord.PRIVACY_PRIVATE) ? ApiUrls.PUBLIC
+					: ApiUrls.PRIVATE);
+			attr.add(ApiUrls.QUICKKEY + "=" + quickkey);
+			attr.add(ApiUrls.PRIVACY + "=" + privacy);
 			if (select.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FILE)) {
 				Connection connection = new Connection(this);
-				UpdateFileTask update = new UpdateFileTask(this, connection, attr);
-				update.execute();
+				Mediabase m = new Mediabase(this);
+				FileRecord f;
+				try {
+					f = new FileRecord(m.getReadableDatabase(), quickkey);
+					f.privacy = privacy;
+					UpdateFileTask update = new UpdateFileTask(this, connection, attr, f, info.position);
+					update.execute();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} finally {
+					m.close();
+				}
 
 			} else {
 

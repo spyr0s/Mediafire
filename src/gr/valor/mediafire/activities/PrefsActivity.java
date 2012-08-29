@@ -2,8 +2,6 @@ package gr.valor.mediafire.activities;
 
 import gr.valor.mediafire.Mediafire;
 import gr.valor.mediafire.R;
-import gr.valor.mediafire.R.string;
-import gr.valor.mediafire.R.xml;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -90,7 +88,7 @@ public class PrefsActivity extends PreferenceActivity implements OnSharedPrefere
 		if (key.equals(getString(R.string.pref_cacheKey))) {
 			ListPreference listPref = (ListPreference) pref;
 			try {
-				Long duration = Long.parseLong(listPref.getValue());
+				int duration = Integer.parseInt(listPref.getValue());
 				Log.d(TAG, "Setting cache duration to " + duration);
 				mediafire.setCacheDuration(duration);
 			} catch (NumberFormatException e) {

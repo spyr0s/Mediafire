@@ -1,5 +1,7 @@
 package gr.valor.mediafire.database;
 
+import java.util.Map;
+
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -105,5 +107,19 @@ public class FileRecord extends FolderItemRecord {
 
 		}
 		return Long.toString(size);
+	}
+
+	public Map<String, String> updateAdapterItem(Map<String, String> map) {
+		map.put(ICON, getFileExtension());
+		map.put(TYPE, TYPE_FILE);
+		map.put(NAME, filename);
+		map.put(QUICKKEY, quickkey);
+		map.put(CREATED, getCreated());
+		map.put(PRIVACY, privacy);
+		map.put(DOWNLOADS, String.valueOf(downloads));
+		map.put(DOWNLOAD_ICON, YES);
+		map.put(SIZE, getSize());
+		map.put(SIZE_ICON, YES);
+		return map;
 	}
 }

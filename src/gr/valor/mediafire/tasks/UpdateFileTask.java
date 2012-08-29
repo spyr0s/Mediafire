@@ -4,12 +4,18 @@ import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.FolderActivity;
 import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
+import gr.valor.mediafire.database.FileRecord;
+import gr.valor.mediafire.database.FolderItemRecord;
+import gr.valor.mediafire.database.Mediabase;
+import gr.valor.mediafire.parser.Elements;
+import gr.valor.mediafire.parser.SimpleParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Map;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
@@ -22,18 +28,22 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 	private Connection connection;
 	private ArrayList<String> attributes;
 	private ProgressDialog d;
+	private FileRecord fileRecord;
+	private int position;
 
-	public UpdateFileTask(FolderActivity activity, Connection connection, ArrayList<String> attr) {
+	public UpdateFileTask(FolderActivity activity, Connection connection, ArrayList<String> attr, FileRecord fileRecord, int position) {
 		this.activity = activity;
 		this.connection = connection;
 		this.attributes = attr;
 		this.d = new ProgressDialog(activity);
+		this.fileRecord = fileRecord;
+		this.position = position - 1;
 	}
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		this.d.setMessage("Geting link...");
+		this.d.setMessage("Updating file...");
 		this.d.show();
 	}
 
@@ -41,6 +51,17 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 	protected void onPostExecute(Boolean success) {
 		super.onPostExecute(success);
 		this.d.dismiss();
+		if (success) {
+			Mediabase m = new Mediabase(activity);
+			this.fileRecord.save(m.getWritableDatabase());
+			m.close();
+			Map<String, String> item = activity.folderItems.get(position);
+			fileRecord.updateAdapterItem(item);
+			item.put(FolderItemRecord.PRIVACY, fileRecord.privacy);
+			activity.folderAdapter.notifyDataSetChanged();
+		} else {
+			Toast.makeText(activity, "Could not update the file", Toast.LENGTH_SHORT).show();
+		}
 	}
 
 	@Override
@@ -66,11 +87,15 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 				builder.append(line);
 			}
 			String response = builder.toString();
-
-			// GetFileLink d = new GetFileLink(response);
-			return true;
+			SimpleParser simple = new SimpleParser(response, Elements.ACTION_UPDATE_FILE);
+			if (simple.success) {
+				return true;
+			}
 
 		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {

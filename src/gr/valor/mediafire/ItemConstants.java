@@ -21,6 +21,7 @@ public interface ItemConstants {
 	String TYPE_BACK = "back";
 	String PRIVACY_PRIVATE = "private";
 	String PRIVACY_PUBLIC = "public";
+	String PRIVACY_INVISIBLE = "invisible";
 	String DOWNLOAD_ICON = "download_icon";
 	String SIZE_ICON = "size_icon";
 

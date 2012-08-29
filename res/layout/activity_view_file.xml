@@ -1,180 +1,185 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollview"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="47dp" android:layout_marginBottom="8dp" android:layout_marginTop="16dp" android:orientation="horizontal">
-
-        <ImageView
-            android:id="@+id/file_view_icon"
-            android:layout_width="60dp"
-            android:layout_height="48dp"
-            android:layout_weight="0.82"
-            android:src="@drawable/icon_file" />
-
-        <TextView
-            android:id="@+id/file_view_name"
-            android:layout_width="164dp"
-            android:layout_height="52dp"
-            android:layout_weight="3.13"
-            android:gravity="center_vertical"
-            android:text="Large Text"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical" >
-
-        <TableLayout
+        android:orientation="vertical" android:scrollbarStyle="insideOverlay">
+    
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <TableRow
-                android:id="@+id/tableRow_created"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp" >
-
-                <TextView
-                    android:id="@+id/file_view_created_label"
-                    android:layout_width="140dp"
+            android:layout_height="47dp" android:layout_marginBottom="8dp" android:layout_marginTop="16dp" android:orientation="horizontal">
+    
+            <ImageView
+                android:id="@+id/file_view_icon"
+                android:layout_width="60dp"
+                android:layout_height="48dp"
+                android:layout_weight="0.82"
+                android:src="@drawable/icon_file" />
+    
+            <TextView
+                android:id="@+id/file_view_name"
+                android:layout_width="164dp"
+                android:layout_height="52dp"
+                android:layout_weight="3.13"
+                android:gravity="center_vertical"
+                android:text="Large Text"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </LinearLayout>
+    
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+    
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+    
+                <TableRow
+                    android:id="@+id/tableRow_created"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Created:" />
-
-                <TextView
-                    android:id="@+id/file_view_created"
-                    android:layout_width="match_parent"
+                    android:layout_margin="8dp" >
+    
+                    <TextView
+                        android:id="@+id/file_view_created_label"
+                        android:layout_width="140dp"
+                        android:layout_height="wrap_content"
+                        android:text="Created:" />
+    
+                    <TextView
+                        android:id="@+id/file_view_created"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="" />
+                </TableRow>
+    
+                <TableRow
+                    android:id="@+id/tableRow_size"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="" />
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRow_size"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp" >
-
-                <TextView
-                    android:id="@+id/file_view_size_label"
-                    android:layout_width="140dp"
+                    android:layout_margin="8dp" >
+    
+                    <TextView
+                        android:id="@+id/file_view_size_label"
+                        android:layout_width="140dp"
+                        android:layout_height="wrap_content"
+                        android:text="Size:" />
+    
+                    <TextView
+                        android:id="@+id/file_view_size"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="" />
+                </TableRow>
+    
+                <TableRow
+                    android:id="@+id/tableRow_downloads"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Size:" />
-
-                <TextView
-                    android:id="@+id/file_view_size"
-                    android:layout_width="match_parent"
+                    android:layout_margin="8dp" >
+    
+                    <TextView
+                        android:id="@+id/file_view_downloads_label"
+                        android:layout_width="140dp"
+                        android:layout_height="wrap_content"
+                        android:text="Downloads:" />
+    
+                    <TextView
+                        android:id="@+id/file_view_downloads"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="0" />
+                </TableRow>
+    
+                <TableRow
+                    android:id="@+id/tableRow_privacy"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="" />
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRow_downloads"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp" >
-
-                <TextView
-                    android:id="@+id/file_view_downloads_label"
-                    android:layout_width="140dp"
+                    android:layout_margin="8dp" >
+    
+                    <TextView
+                        android:id="@+id/file_view_privacy_label"
+                        android:layout_width="140dp"
+                        android:layout_height="wrap_content"
+                        android:text="Privacy:" />
+    
+                    <TextView
+                        android:id="@+id/file_view_privacy"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="public" />
+                </TableRow>
+    
+                <TableRow
+                    android:id="@+id/tableRow_password"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Downloads:" />
-
-                <TextView
-                    android:id="@+id/file_view_downloads"
-                    android:layout_width="match_parent"
+                    android:layout_margin="8dp" >
+    
+                    <TextView
+                        android:id="@+id/file_view_passwordProtected_label"
+                        android:layout_width="140dp"
+                        android:layout_height="wrap_content"
+                        android:text="Password protected:" />
+    
+                    <TextView
+                        android:id="@+id/file_view_passwordProtected"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="no" />
+                </TableRow>
+    
+                <TableRow
+                    android:id="@+id/TableRow_description"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="0" />
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRow_privacy"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp" >
-
-                <TextView
-                    android:id="@+id/file_view_privacy_label"
-                    android:layout_width="140dp"
+                    android:layout_margin="8dp" >
+    
+                    <TextView
+                        android:id="@+id/file_view_description_label"
+                        android:layout_width="140dp"
+                        android:layout_height="wrap_content"
+                        android:text="Description:" />
+    
+                    <TextView
+                        android:id="@+id/file_view_description"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="" />
+                </TableRow>
+                <TableRow
+                    android:id="@+id/TableRow_tags"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Privacy:" />
-
-                <TextView
-                    android:id="@+id/file_view_privacy"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="public" />
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRow_password"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp" >
-
-                <TextView
-                    android:id="@+id/file_view_passwordProtected_label"
-                    android:layout_width="140dp"
-                    android:layout_height="wrap_content"
-                    android:text="Password protected:" />
-
-                <TextView
-                    android:id="@+id/file_view_passwordProtected"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="no" />
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/TableRow_description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp" >
-
-                <TextView
-                    android:id="@+id/file_view_description_label"
-                    android:layout_width="140dp"
-                    android:layout_height="wrap_content"
-                    android:text="Description:" />
-
-                <TextView
-                    android:id="@+id/file_view_description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="" />
-            </TableRow>
-            <TableRow
-                android:id="@+id/TableRow_tags"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp" >
-
-                <TextView
-                    android:id="@+id/file_view_tags_label"
-                    android:layout_width="140dp"
-                    android:layout_height="wrap_content"
-                    android:text="Tags:" />
-
-                <TextView
-                    android:id="@+id/file_view_tags"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="" />
-            </TableRow>
-            
-        </TableLayout>
-        <Button android:id="@+id/file_view_downloadBt" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="12dp" android:onClick="downloadFile" android:text="Download"/>
+                    android:layout_margin="8dp" >
+    
+                    <TextView
+                        android:id="@+id/file_view_tags_label"
+                        android:layout_width="140dp"
+                        android:layout_height="wrap_content"
+                        android:text="Tags:" />
+    
+                    <TextView
+                        android:id="@+id/file_view_tags"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="" />
+                </TableRow>
+                
+            </TableLayout>
+            <Button android:id="@+id/file_view_downloadBt" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_margin="12dp" android:onClick="downloadFile" android:text="Download"/>
+        </LinearLayout>
+    
     </LinearLayout>
-
-</LinearLayout>
+</ScrollView>

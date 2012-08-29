@@ -6,6 +6,7 @@ import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.ViewFileActivity;
 import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
+import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.parser.GetFileLink;
 
 import java.io.BufferedReader;
@@ -15,13 +16,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.DownloadManager.Request;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.EditText;
 import android.widget.Toast;
 
 public class GetFileLinkTask extends AsyncTask<String, Void, String> implements ApiUrls {
@@ -31,6 +35,8 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 	private Connection connection;
 	private Mediafire mediafire;
 	private ProgressDialog d;
+	private String saveFilename;
+	private int answer;
 
 	public GetFileLinkTask(ViewFileActivity viewFileActivity, Connection connection) {
 		this.activity = viewFileActivity;
@@ -47,23 +53,55 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 	}
 
 	@Override
-	protected void onPostExecute(String url) {
+	protected void onPostExecute(final String url) {
 		super.onPostExecute(url);
 		this.d.dismiss();
 		if (url != null) {
+			answer = -1;
 			Log.d(TAG, "Saving link: " + url);
 			mediafire.setPref(PrefConstants.FILE_PREF_DOWNLOAD_LINKS, PrefConstants.PREF_TYPE_STRING, activity.fileRecord.quickkey, url);
 			activity.dm = (DownloadManager) activity.getSystemService(activity.DOWNLOAD_SERVICE);
+			saveFilename = activity.fileRecord.filename;
 			if (new File(Environment.getExternalStorageDirectory().getPath() + "/" + Environment.DIRECTORY_DOWNLOADS + "/"
 					+ activity.fileRecord.filename).exists()) {
-				Log.w(TAG, "File already exists");
-			}
-			Request request = new Request(Uri.parse(url)).setTitle("Downloading " + activity.fileRecord.filename)
-					.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, activity.fileRecord.filename);
+				AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+				alert.setTitle("The file already exists");
+				alert.setMessage("Save the file as:");
+				final EditText newFilename = new EditText(activity);
+				newFilename.setText(saveFilename);
+				alert.setView(newFilename);
+				alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						saveFilename = newFilename.getText().toString();
+						Log.d(TAG, "new Filename : " + saveFilename);
+						downloadFile(url);
+					}
+				});
 
-			activity.enqueue = activity.dm.enqueue(request);
-			Toast.makeText(activity, "The file is being downloaded", Toast.LENGTH_SHORT).show();
+				alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+					public void onClick(DialogInterface dialog, int which) {
+						return;
+					}
+				});
+
+				alert.show();
+			}
+			downloadFile(url);
 		}
+	}
+
+	private void downloadFile(String url) {
+		Request request = new Request(Uri.parse(url)).setTitle("Downloading " + saveFilename).setDestinationInExternalPublicDir(
+				Environment.DIRECTORY_DOWNLOADS, saveFilename);
+
+		activity.enqueue = activity.dm.enqueue(request);
+		Mediabase db = new Mediabase(activity);
+		activity.fileRecord.downloads++;
+		activity.getViewDownloads().setText(String.valueOf(activity.fileRecord.downloads));
+		activity.fileRecord.save(db.getWritableDatabase());
+		db.close();
+		Toast.makeText(activity, "The file is being downloaded", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override

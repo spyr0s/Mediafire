@@ -1,6 +1,5 @@
 package gr.valor.mediafire.parser;
 
-import gr.valor.mediafire.api.JSONParser;
 
 import org.json.JSONException;
 import org.json.JSONObject;
