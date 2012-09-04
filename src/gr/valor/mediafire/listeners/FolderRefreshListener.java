@@ -1,8 +1,8 @@
 package gr.valor.mediafire.listeners;
 
-import android.util.Log;
 import eu.erikw.PullToRefreshListView.OnRefreshListener;
 import gr.valor.mediafire.activities.FolderActivity;
+import gr.valor.mediafire.helpers.MyLog;
 
 public class FolderRefreshListener implements OnRefreshListener {
 	public static final String TAG = "FolderRefreshListener";
@@ -17,7 +17,7 @@ public class FolderRefreshListener implements OnRefreshListener {
 		activity.listView.postDelayed(new Runnable() {
 			@Override
 			public void run() {
-				Log.d(TAG, "Start Refreshing");
+				MyLog.d(TAG, "Start Refreshing");
 				activity.mediafire.setForceOnline(true);
 				activity.requestFolder();
 			}

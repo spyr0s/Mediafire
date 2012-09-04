@@ -1,22 +1,27 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="gr.valor.mediafire"
     android:versionCode="1"
-    android:versionName="1.0">
+    android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="9" android:targetSdkVersion="10" android:maxSdkVersion="14"/>
+        android:maxSdkVersion="14"
+        android:minSdkVersion="9"
+        android:targetSdkVersion="10" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
+        android:name="Mediafire"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" android:name="Mediafire" android:logo="@drawable/ic_launcher">
+        android:logo="@drawable/ic_launcher"
+        android:theme="@style/AppTheme" >
         <activity
             android:name=".activities.LoginActivity"
-            android:label="@string/title_activity_login" android:icon="@drawable/ic_launcher">
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/title_activity_login" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,10 +30,27 @@
         </activity>
         <activity
             android:name=".activities.FolderActivity"
-            android:label="@string/title_activity_folder" android:icon="@drawable/ic_launcher" android:logo="@drawable/ic_launcher" android:theme="@style/AppTheme">
+            android:icon="@drawable/ic_launcher"
+            android:label="@string/title_activity_folder"
+            android:logo="@drawable/ic_launcher"
+            android:theme="@style/AppTheme" >
         </activity>
-        <activity android:label="Preferences" android:name=".activities.PrefsActivity" android:icon="@drawable/ic_launcher"></activity>
-        <activity android:name=".activities.ViewFileActivity" android:label="@string/title_view_file_activity"></activity>
+        <activity
+            android:name=".activities.PrefsActivity"
+            android:icon="@drawable/ic_launcher"
+            android:label="Preferences" >
+        </activity>
+        <activity
+            android:name=".activities.ViewFileActivity"
+            android:label="@string/title_view_file_activity" >
+        </activity>
+        <receiver android:name=".receivers.DownloadBroadcastReceiver">
+            <intent-filter>
+            <action android:name="android.intent.action.DOWNLOAD_COMPLETE"></action>
+
+        </intent-filter>
+            
+        </receiver>
     </application>
 
 </manifest>

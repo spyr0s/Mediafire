@@ -26,6 +26,8 @@ public class LoginActivity extends BaseActivity {
 		et_email = (EditText) findViewById(R.id.login_username);
 		et_password = (EditText) findViewById(R.id.login_password);
 		cb_remember = (CheckBox) findViewById(R.id.login_remember);
+		et_email.setText("remchris78@hotmail.com");
+		et_password.setText("#valorpromo#");
 		if (!mediafire.isOnline()) {
 			showFolders();
 		} else {

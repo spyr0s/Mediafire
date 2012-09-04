@@ -1,6 +1,7 @@
 package gr.valor.mediafire.database;
 
 import gr.valor.mediafire.ItemConstants;
+import gr.valor.mediafire.Mediafire;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +31,13 @@ public abstract class FolderItemRecord implements ItemConstants {
 
 	protected abstract void createFromCursor(Cursor c);
 
-	protected boolean isNew(SQLiteDatabase db, String key) {
-		Cursor cur = db.rawQuery("SELECT " + Columns.Items.KEY + " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + "=?",
+	protected SQLiteDatabase getDb() {
+		return Mediafire.getDb();
+	}
+
+	protected boolean isNew(String key) {
+		Cursor cur = getDb().rawQuery(
+				"SELECT " + Columns.Items.KEY + " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + "=?",
 				new String[] { key });
 		if (cur.getCount() > 0) {
 			cur.close();

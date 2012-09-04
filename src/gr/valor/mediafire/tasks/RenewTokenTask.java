@@ -5,6 +5,7 @@ import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.LoginActivity;
 import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
+import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.SessionToken;
 
 import java.io.BufferedReader;
@@ -14,7 +15,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.Toast;
 
 public class RenewTokenTask extends AsyncTask<String, Void, String> implements ApiUrls {
@@ -34,10 +34,10 @@ public class RenewTokenTask extends AsyncTask<String, Void, String> implements A
 	protected void onPostExecute(String result) {
 		super.onPostExecute(result);
 		if (result == null || result.equals("null")) {
-			Log.d(TAG, "Wrong credentials");
+			MyLog.d(TAG, "Wrong credentials");
 			Toast.makeText(this.activity, "Wrong username or password", Toast.LENGTH_LONG).show();
 		} else {
-			Log.d(TAG, "Setting credentials");
+			MyLog.d(TAG, "Setting credentials");
 			mediafire.setSessionToken(result);
 			mediafire.setSessionTokenCreationTime(System.currentTimeMillis() / 1000);
 		}
@@ -46,7 +46,7 @@ public class RenewTokenTask extends AsyncTask<String, Void, String> implements A
 
 	@Override
 	protected String doInBackground(String... arg0) {
-		Log.d(TAG, "Connecting...");
+		MyLog.d(TAG, "Connecting...");
 		ArrayList<String> attr = new ArrayList<String>();
 		attr.add(SESSION_TOKEN + "=" + mediafire.getSessionToken());
 		attr.add(RESPONSE_FORMAT + "=" + JSON);
@@ -56,7 +56,7 @@ public class RenewTokenTask extends AsyncTask<String, Void, String> implements A
 
 			if (in == null) {
 				Toast.makeText(activity, R.string.error_cant_read, Toast.LENGTH_LONG).show();
-				Log.e(TAG, "Could not read from " + RENEW_SESSION_TOKEN_URL);
+				MyLog.e(TAG, "Could not read from " + RENEW_SESSION_TOKEN_URL);
 			}
 
 			StringBuilder builder = new StringBuilder();

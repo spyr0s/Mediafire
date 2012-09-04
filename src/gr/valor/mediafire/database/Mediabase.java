@@ -1,10 +1,10 @@
 package gr.valor.mediafire.database;
 
+import gr.valor.mediafire.helpers.MyLog;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 public class Mediabase extends SQLiteOpenHelper {
 	public static final String TAG = "Mediabase";
@@ -22,7 +22,7 @@ public class Mediabase extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		Log.d(TAG, "Creating table " + TABLE_ITEMS);
+		MyLog.d(TAG, "Creating table " + TABLE_ITEMS);
 		db.execSQL("CREATE TABLE `" + TABLE_ITEMS + "`" + "(`" + Columns.Items._ID
 				+ "` INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE ," + "`" + Columns.Items.KEY + "` VARCHAR NOT NULL  UNIQUE , "
 				+ "`" + Columns.Items.TYPE + "` VARCHAR, " + "`" + Columns.Items.PARENT + "` VARCHAR, " + "`" + Columns.Items.NAME
@@ -30,26 +30,26 @@ public class Mediabase extends SQLiteOpenHelper {
 				+ "` INTEGER, " + "`" + Columns.Items.PRIVACY + "` TEXT, `" + Columns.Items.CREATED + "` DATETIME, " + "`"
 				+ Columns.Items.INSERTED + "` INTEGER )");
 
-		Log.d(TAG, "Creating table " + TABLE_FOLDERS);
+		MyLog.d(TAG, "Creating table " + TABLE_FOLDERS);
 		db.execSQL("CREATE TABLE `" + TABLE_FOLDERS + "` " + "(`" + Columns.Folders._ID
 				+ "` INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , " + "`" + Columns.Folders.FOLDERKEY
 				+ "` VARCHAR NOT NULL  UNIQUE , " + "`" + Columns.Folders.FOLDERS + "` INTEGER DEFAULT 0, " + "`" + Columns.Folders.SHARED
 				+ "` TEXT, " + "`" + Columns.Folders.REVISION + "` INTEGER, " + "`" + Columns.Folders.EPOCH + "` INTEGER, " + "`"
 				+ Columns.Folders.DROPBOX_ENABLED + "` TEXT, " + "`" + Columns.Folders.FILES + "` INTEGER DEFAULT 0)");
 
-		Log.d(TAG, "Creating table " + TABLE_FILES);
+		MyLog.d(TAG, "Creating table " + TABLE_FILES);
 		db.execSQL("CREATE TABLE `" + TABLE_FILES + "` " + "(`" + Columns.Files._ID
 				+ "` INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , " + "`" + Columns.Files.QUICKKEY
 				+ "` VARCHAR NOT NULL  UNIQUE , " + "`" + Columns.Files.FILETYPE + "` TEXT, " + "`" + Columns.Files.PASSWORD_PROTECTED
 				+ "` TEXT, " + "`" + Columns.Files.DOWNLOADS + "` INTEGER DEFAULT 0, " + "`" + Columns.Files.SIZE + "` INTEGER DEFAULT 0)");
 
-		Log.d(TAG, "Creating table " + TABLE_NOTES);
+		MyLog.d(TAG, "Creating table " + TABLE_NOTES);
 		db.execSQL("CREATE TABLE `" + TABLE_NOTES + "` " + "(`" + Columns.Notes._ID
 				+ "` INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , " + "`" + Columns.Notes.QUICKKEY
 				+ "` VARCHAR NOT NULL  UNIQUE , " + "`" + Columns.Notes.SUBJECT + "` VARCHAR, " + "`" + Columns.Notes.DESCRIPTION
 				+ "` TEXT )");
 
-		Log.d(TAG, "Creating table " + TABLE_REVISIONS);
+		MyLog.d(TAG, "Creating table " + TABLE_REVISIONS);
 		db.execSQL("CREATE TABLE `" + TABLE_REVISIONS + "` " + "(`" + Columns.Revisions._ID
 				+ "` INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE , " + "`" + Columns.Revisions.REVISION + "` INTEGER, " + "`"
 				+ Columns.Revisions.EPOCH + "` INTEGER )");
@@ -58,7 +58,7 @@ public class Mediabase extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		Log.w(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
+		MyLog.w(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
 		db.execSQL("DROP TABLE IF EXISTS " + TABLE_NOTES);
 		db.execSQL("DROP TABLE IF EXISTS " + TABLE_FILES);
 		db.execSQL("DROP TABLE IF EXISTS " + TABLE_FOLDERS);
@@ -69,7 +69,7 @@ public class Mediabase extends SQLiteOpenHelper {
 	}
 
 	public static void truncateTables(SQLiteDatabase db) {
-		Log.d(TAG, "Truncating tables");
+		MyLog.d(TAG, "Truncating tables");
 		db.execSQL("DELETE FROM " + TABLE_NOTES);
 		db.execSQL("DELETE FROM " + TABLE_FILES);
 		db.execSQL("DELETE FROM " + TABLE_FOLDERS);

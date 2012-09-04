@@ -6,7 +6,7 @@ import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.ViewFileActivity;
 import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
-import gr.valor.mediafire.database.Mediabase;
+import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.GetFileLink;
 
 import java.io.BufferedReader;
@@ -23,7 +23,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -57,7 +56,7 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 		this.d.dismiss();
 		if (url != null) {
 			answer = -1;
-			Log.d(TAG, "Saving link: " + url);
+			MyLog.d(TAG, "Saving link: " + url);
 			mediafire.setPref(PrefConstants.FILE_PREF_DOWNLOAD_LINKS, PrefConstants.PREF_TYPE_STRING, activity.fileRecord.quickkey, url);
 			activity.dm = (DownloadManager) activity.getSystemService(activity.DOWNLOAD_SERVICE);
 			final String orFilename = activity.fileRecord.filename;
@@ -80,7 +79,7 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 						if (saveFilename.equals(orFilename)) {
 							file.renameTo(new File(path + "/" + orFilename + ".tmp"));
 						}
-						Log.d(TAG, "Downloading to : " + path + "/" + saveFilename);
+						MyLog.d(TAG, "Downloading to : " + path + "/" + saveFilename);
 						downloadFile(url);
 					}
 				});
@@ -103,11 +102,9 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 		Request request = new Request(Uri.parse(url)).setTitle("Downloading " + saveFilename).setDestinationUri(Uri.fromFile(file));
 
 		activity.enqueue = activity.dm.enqueue(request);
-		Mediabase db = new Mediabase(activity);
 		activity.fileRecord.downloads++;
 		activity.getViewDownloads().setText(String.valueOf(activity.fileRecord.downloads));
-		activity.fileRecord.save(db.getWritableDatabase());
-		db.close();
+		activity.fileRecord.save();
 		Toast.makeText(activity, "The file is being downloaded", Toast.LENGTH_SHORT).show();
 	}
 
@@ -116,10 +113,10 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 		String quickKey = args[0];
 		String dlink = (String) mediafire.getPref(PrefConstants.FILE_PREF_DOWNLOAD_LINKS, PrefConstants.PREF_TYPE_STRING, quickKey, null);
 		if (!dlink.equals("null")) {
-			Log.d(TAG, "Saved link " + dlink);
+			MyLog.d(TAG, "Saved link " + dlink);
 			return dlink;
 		}
-		Log.d(TAG, "Connecting...");
+		MyLog.d(TAG, "Connecting...");
 
 		InputStream in = null;
 		ArrayList<String> attr = new ArrayList<String>();
@@ -132,7 +129,7 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 
 			if (in == null) {
 				Toast.makeText(activity, R.string.error_cant_read, Toast.LENGTH_LONG).show();
-				Log.e(TAG, "Could not read from " + GET_LINKS_URL);
+				MyLog.e(TAG, "Could not read from " + GET_LINKS_URL);
 			}
 
 			StringBuilder builder = new StringBuilder();

@@ -1,9 +1,9 @@
 package gr.valor.mediafire.parser;
 
+import gr.valor.mediafire.helpers.MyLog;
+
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.util.Log;
 
 public class SimpleParser extends JSONParser {
 	public static final String TAG = "SimpleParser";
@@ -24,12 +24,12 @@ public class SimpleParser extends JSONParser {
 	@Override
 	public void parse() throws JSONException {
 		try {
-			Log.d(TAG, "json:" + jsonString);
+			MyLog.d(TAG, "json:" + jsonString);
 			JSONObject obj = new JSONObject(jsonString);
 			response = obj.getJSONObject(RESPONSE);
 			action = response.getString(ACTION);
 			result = response.getString(RESULT);
-			Log.d(TAG, action + " " + result);
+			MyLog.d(TAG, action + " " + result);
 			if (result.equals(SUCCESS) && action.equals(reqAction)) {
 				success = true;
 			}

@@ -1,6 +1,7 @@
 package gr.valor.mediafire.api;
 
 import gr.valor.mediafire.helpers.Helper;
+import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.Elements;
 
 import java.io.IOException;
@@ -27,7 +28,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.NetworkInfo.State;
 import android.os.AsyncTask;
-import android.util.Log;
 
 public class Connection extends AsyncTask<Object, String, String> implements ApiUrls, Elements {
 	private static final String TAG = "Connect";
@@ -41,18 +41,21 @@ public class Connection extends AsyncTask<Object, String, String> implements Api
 	}
 
 	public InputStream connect(String stUrl, ArrayList<String> params) throws IOException {
+		params = Helper.encodeParams(params);
 		stUrl += "?" + Helper.implode(params, "&");
-		Log.d(TAG, "Connecting to url:" + stUrl);
+		MyLog.d(TAG, "Connecting to url:" + stUrl);
 		InputStream is = null;
 		HttpClient httpclient = wrapClient(new DefaultHttpClient());
 
-		HttpGet http = new HttpGet(stUrl);
-		Log.d(TAG, http.getURI().toString());
+		HttpGet http;
+		http = new HttpGet(stUrl);
+		MyLog.d(TAG, http.getURI().toString());
 		HttpResponse response = httpclient.execute(http);
-		Log.d(TAG, "The response is: " + response.getAllHeaders());
+		MyLog.d(TAG, "The response is: " + response.getAllHeaders());
 		is = response.getEntity().getContent();
 
 		return is;
+
 	}
 
 	public static HttpClient wrapClient(HttpClient base) {
@@ -77,6 +80,7 @@ public class Connection extends AsyncTask<Object, String, String> implements Api
 			sr.register(new Scheme("https", ssf, 443));
 			return new DefaultHttpClient(ccm, base.getParams());
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			return null;
 		}
 	}
@@ -99,18 +103,18 @@ public class Connection extends AsyncTask<Object, String, String> implements Api
 	}
 
 	public boolean isActive() {
-		Log.d(TAG, "Checking connection");
+		MyLog.d(TAG, "Checking connection");
 		if (!ApiUrls.DOMAIN.equals("https://www.mediafire.com/api")) {
-			Log.d(TAG, "Debug mode");
+			MyLog.d(TAG, "Debug mode");
 			return true;
 		}
 		ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
 		if (networkInfo != null && networkInfo.isConnected()) {
-			Log.d(TAG, "Connection is OK");
+			MyLog.d(TAG, "Connection is OK");
 			return true;
 		} else {
-			Log.d(TAG, "No Connection");
+			MyLog.d(TAG, "No Connection");
 			return false;
 		}
 

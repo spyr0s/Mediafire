@@ -2,12 +2,13 @@ package gr.valor.mediafire.helpers;
 
 import gr.valor.mediafire.api.ApiUrls;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import android.util.Log;
 
 public class Helper {
 
@@ -55,14 +56,14 @@ public class Helper {
 			}
 			return result.toString();
 		} catch (NoSuchAlgorithmException ex) {
-			Log.e(TAG, "SHA-1 is not supported");
+			MyLog.e(TAG, "SHA-1 is not supported");
 		}
 		return null;
 	}
 
 	public static String getSignature(String email, String password) {
 		String sign = Helper.sha1(email + password + ApiUrls.APP_ID + ApiUrls.API_KEY);
-		Log.d(TAG, "SHA-1 calculated:" + sign);
+		MyLog.d(TAG, "SHA-1 calculated:" + sign);
 		return sign;
 	}
 
@@ -72,6 +73,20 @@ public class Helper {
 		} catch (NullPointerException exception) {
 			return false;
 		}
+	}
+
+	public static ArrayList<String> encodeParams(ArrayList<String> params) throws UnsupportedEncodingException {
+		ArrayList<String> encoded = new ArrayList<String>();
+		for (String string : params) {
+			String[] parts = string.split("=");
+			if (parts.length == 2) {
+				encoded.add(parts[0] + "=" + URLEncoder.encode(parts[1], "UTF-8"));
+			} else {
+				encoded.add(string);
+			}
+		}
+		return encoded;
+
 	}
 
 }

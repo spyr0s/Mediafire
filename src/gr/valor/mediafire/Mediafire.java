@@ -3,6 +3,7 @@ package gr.valor.mediafire;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.database.Mediabase;
+import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.tasks.RenewTokenTask;
 
 import java.io.File;
@@ -13,7 +14,6 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.Toast;
 
 public class Mediafire extends Application implements PrefConstants {
@@ -39,6 +39,8 @@ public class Mediafire extends Application implements PrefConstants {
 	private int cacheDuration = 0;
 	private boolean closeApp;
 	private boolean forceOnline;
+	private static Mediabase mediabase = null;
+	private static SQLiteDatabase database;
 
 	private String downloadPath;
 
@@ -47,12 +49,23 @@ public class Mediafire extends Application implements PrefConstants {
 		super.onCreate();
 		setEmail((String) getPref(PREF_TYPE_STRING, PREF_KEY_EMAIL, null));
 		setPassword((String) getPref(PREF_TYPE_STRING, PREF_KEY_PASSWORD, null));
+		mediabase = new Mediabase(getApplicationContext());
+	}
 
+	public static Mediabase getMediabase() {
+		return mediabase;
+	}
+
+	public static SQLiteDatabase getDb() {
+		if (database == null) {
+			database = getMediabase().getWritableDatabase();
+		}
+		return database;
 	}
 
 	public void saveCredentials() {
 		if (rememberMe) {
-			Log.d(TAG, "Saving credentials");
+			MyLog.d(TAG, "Saving credentials");
 			setPref(PREF_TYPE_STRING, PREF_KEY_EMAIL, getEmail());
 			setPref(PREF_TYPE_STRING, PREF_KEY_PASSWORD, getPassword());
 
@@ -177,16 +190,13 @@ public class Mediafire extends Application implements PrefConstants {
 		if (currentFolder != null) {
 			return currentFolder;
 		} else {
-			Mediabase m = new Mediabase(this);
-			SQLiteDatabase db = m.getReadableDatabase();
 			FolderRecord f = new FolderRecord();
 			try {
-				f = new FolderRecord(db, FolderRecord.ROOT_KEY);
+				f = new FolderRecord(FolderRecord.ROOT_KEY);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			db.close();
 			return f;
 
 		}
@@ -230,13 +240,13 @@ public class Mediafire extends Application implements PrefConstants {
 
 	public boolean isTokenValid() throws Exception {
 		if (getSessionToken() == null || System.currentTimeMillis() / 1000 - getSessionTokenCreationTime() > TOKEN_LIFETIME) {
-			Log.d(TAG, "Token is null. Need to login");
+			MyLog.d(TAG, "Token is null. Need to login");
 			throw new Exception("Null Token");
 		} else if (System.currentTimeMillis() / 1000 - getSessionTokenCreationTime() > TOKEN_RENEW_TIME) {
-			Log.d(TAG, "Renewing token");
+			MyLog.d(TAG, "Renewing token");
 			return renewSession();
 		} else {
-			Log.d(TAG, "A valid token");
+			MyLog.d(TAG, "A valid token");
 			return true;
 		}
 
@@ -246,7 +256,7 @@ public class Mediafire extends Application implements PrefConstants {
 		String email = getEmail();
 		String password = getPassword();
 		Connection connection = new Connection(this);
-		Log.d(TAG, "Getting session token for " + email + " " + password);
+		MyLog.d(TAG, "Getting session token for " + email + " " + password);
 		RenewTokenTask session = new RenewTokenTask(this, connection);
 		session.execute();
 		try {
@@ -352,7 +362,7 @@ public class Mediafire extends Application implements PrefConstants {
 	public String getDownloadPath() {
 		if (isExternalStoragePresent()) {
 			String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() + "/"
-					+ this.downloadPath;
+					+ getPref(PREF_TYPE_STRING, getString(R.string.pref_downloadDirKey), "mediafire");
 			if (!(new File(path).exists())) {
 				new File(path).mkdirs();
 			}

@@ -3,7 +3,6 @@ package gr.valor.mediafire.database;
 import java.util.Map;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 
 public class FileRecord extends FolderItemRecord {
 
@@ -25,13 +24,13 @@ public class FileRecord extends FolderItemRecord {
 		createFromCursor(cur);
 	}
 
-	public FileRecord(SQLiteDatabase db, String qk) throws Exception {
+	public FileRecord(String qk) throws Exception {
 		String sql = "SELECT " + Columns.Files.QUICKKEY + ", " + Columns.Items.NAME + ", " + Columns.Items.TYPE + ", "
 				+ Columns.Items.PARENT + ", " + Columns.Items.CREATED + ", " + Columns.Files.DOWNLOADS + ", " + Columns.Files.SIZE + ", "
 				+ Columns.Items.INSERTED + ", " + Columns.Items.FLAG + ", " + Columns.Items.PRIVACY + ", " + Columns.Files.FILETYPE + ", "
 				+ Columns.Files.PASSWORD_PROTECTED + " FROM " + Mediabase.TABLE_ITEMS + " i " + " LEFT JOIN " + Mediabase.TABLE_FILES
 				+ " fi " + " ON i." + Columns.Items.KEY + " = fi." + Columns.Files.QUICKKEY + " WHERE " + Columns.Files.QUICKKEY + " = ? ";
-		Cursor cur = db.rawQuery(sql, new String[] { qk });
+		Cursor cur = getDb().rawQuery(sql, new String[] { qk });
 		if (cur.getCount() != 1) {
 			cur.close();
 			throw new Exception(qk + " file not found in database");
@@ -58,32 +57,33 @@ public class FileRecord extends FolderItemRecord {
 		fileExtension = getFileExtension();
 	}
 
-	public boolean save(SQLiteDatabase db) {
+	public boolean save() {
 
-		if (!this.isNew(db, quickkey)) {
+		if (!this.isNew(quickkey)) {
 			String queryItems = "UPDATE " + Mediabase.TABLE_ITEMS + " SET " + Columns.Items.KEY + "= ? ," + Columns.Items.TYPE + " = ? ,"
 					+ Columns.Items.PARENT + " = ? , " + Columns.Items.NAME + " = ? ," + Columns.Items.DESC + " =? ," + Columns.Items.TAGS
 					+ "=? , " + Columns.Items.FLAG + "=? ," + Columns.Items.PRIVACY + "=?," + Columns.Items.CREATED + "=? " + " WHERE "
 					+ Columns.Items.KEY + " = ? ";
 			Object[] paramItems = new Object[] { quickkey, FolderItemRecord.TYPE_FILE, parent, filename, desc, tags, flag, privacy,
 					getCreated(), quickkey };
-			db.execSQL(queryItems, paramItems);
+			getDb().execSQL(queryItems, paramItems);
 			String queryFolder = "UPDATE " + Mediabase.TABLE_FILES + " SET " + Columns.Files.QUICKKEY + "=?," + Columns.Files.DOWNLOADS
 					+ "=?," + Columns.Files.FILETYPE + "=?," + Columns.Files.PASSWORD_PROTECTED + "=?," + Columns.Files.SIZE + "=? WHERE "
 					+ Columns.Files.QUICKKEY + "= ?";
 			Object[] paramFolders = new Object[] { quickkey, downloads, fileType, passwordProtected, size, quickkey };
-			db.execSQL(queryFolder, paramFolders);
+			getDb().execSQL(queryFolder, paramFolders);
 		} else {
-			db.execSQL(
+			getDb().execSQL(
 					"INSERT OR IGNORE INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
 							+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
 							+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + " )"
-							+ " VALUES (?,?,?,?,?,?,?,?,?)", new Object[] { quickkey, FolderItemRecord.TYPE_FILE, parent, filename, desc,
-							tags, flag, privacy, getCreated() });
+							+ " VALUES (?,?,?,?,?,?,?,?,?)",
+					new Object[] { quickkey, FolderItemRecord.TYPE_FILE, parent, filename, desc, tags, flag, privacy, getCreated() });
 
-			db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FILES + "(" + Columns.Files.QUICKKEY + "," + Columns.Files.DOWNLOADS
-					+ "," + Columns.Files.FILETYPE + "," + Columns.Files.PASSWORD_PROTECTED + "," + Columns.Files.SIZE + ")"
-					+ " VALUES (?,?,?, ?,?)", new Object[] { quickkey, downloads, fileType, passwordProtected, size });
+			getDb().execSQL(
+					"INSERT OR IGNORE INTO " + Mediabase.TABLE_FILES + "(" + Columns.Files.QUICKKEY + "," + Columns.Files.DOWNLOADS + ","
+							+ Columns.Files.FILETYPE + "," + Columns.Files.PASSWORD_PROTECTED + "," + Columns.Files.SIZE + ")"
+							+ " VALUES (?,?,?, ?,?)", new Object[] { quickkey, downloads, fileType, passwordProtected, size });
 		}
 		return true;
 	}

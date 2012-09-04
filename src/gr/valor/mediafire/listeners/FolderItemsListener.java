@@ -4,13 +4,11 @@ import gr.valor.mediafire.activities.FolderActivity;
 import gr.valor.mediafire.activities.ViewFileActivity;
 import gr.valor.mediafire.database.FolderItemRecord;
 import gr.valor.mediafire.database.FolderRecord;
-import gr.valor.mediafire.database.Mediabase;
+import gr.valor.mediafire.helpers.MyLog;
 
 import java.util.Map;
 
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -29,24 +27,20 @@ public class FolderItemsListener implements OnItemClickListener {
 		if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_BACK)) {
 			activity.onBackPressed();
 		} else if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FOLDER)) {
-			Mediabase mb = new Mediabase(activity);
-			SQLiteDatabase db = mb.getReadableDatabase();
 			try {
-				FolderRecord newFolder = new FolderRecord(db, fi.get(FolderItemRecord.FOLDERKEY));
+				FolderRecord newFolder = new FolderRecord(fi.get(FolderItemRecord.FOLDERKEY));
 				activity.mediafire.setCurrentFolder(newFolder);
 				activity.requestFolder();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} finally {
-				db.close();
 			}
 		} else if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FILE)) {
 			String quickkey = fi.get(FolderItemRecord.QUICKKEY);
 			Intent intent = new Intent(activity, ViewFileActivity.class);
 			intent.putExtra(ViewFileActivity.FILE_QUICKKEY, quickkey);
 			activity.startActivity(intent);
-			Log.d(TAG, "Clicked on " + quickkey);
+			MyLog.d(TAG, "Clicked on " + quickkey);
 		}
 	}
 }

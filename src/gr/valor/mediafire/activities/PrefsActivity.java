@@ -2,6 +2,7 @@ package gr.valor.mediafire.activities;
 
 import gr.valor.mediafire.Mediafire;
 import gr.valor.mediafire.R;
+import gr.valor.mediafire.helpers.MyLog;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -12,7 +13,6 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
-import android.util.Log;
 
 public class PrefsActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 	public static final String TAG = "PrefsActivity";
@@ -94,11 +94,11 @@ public class PrefsActivity extends PreferenceActivity implements OnSharedPrefere
 			ListPreference listPref = (ListPreference) pref;
 			try {
 				int duration = Integer.parseInt(listPref.getValue());
-				Log.d(TAG, "Setting cache duration to " + duration);
+				MyLog.d(TAG, "Setting cache duration to " + duration);
 				mediafire.setCacheDuration(duration);
 			} catch (NumberFormatException e) {
 				e.printStackTrace();
-				Log.w(TAG, "Setting cache duration failed ");
+				MyLog.w(TAG, "Setting cache duration failed ");
 			}
 		} else if (key.equals(getString(R.string.pref_gsmKey))) {
 			CheckBoxPreference cb = (CheckBoxPreference) pref;

@@ -3,12 +3,11 @@ package gr.valor.mediafire.parser;
 import gr.valor.mediafire.database.FileRecord;
 import gr.valor.mediafire.database.FolderItemRecord;
 import gr.valor.mediafire.database.FolderRecord;
+import gr.valor.mediafire.helpers.MyLog;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import android.util.Log;
 
 public class MyFilesJSONParser extends JSONParser implements Elements {
 	public static final String TAG = "MyFilesJSONParser";
@@ -31,7 +30,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 		try {
 			checkAction(ACTION_GET_FOLDER_CONTENT);
 		} catch (JSONException e) {
-			Log.w(TAG, e.getMessage());
+			MyLog.w(TAG, e.getMessage());
 			throw e;
 		}
 		folder.name = FolderItemRecord.ROOT_NAME;
@@ -44,7 +43,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 			for (int i = 0; i < folders.length(); i++) {
 				JSONObject f = (JSONObject) folders.get(i);
 				JSONObject rev = f.getJSONObject(REVISION);
-				Log.d("XML", f.toString());
+				MyLog.d("XML", f.toString());
 				FolderRecord cFolder = new FolderRecord();
 				cFolder.name = getStringValue(f, NAME);
 				cFolder.setCreated(getStringValue(f, CREATED));
@@ -62,7 +61,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 				cFolder.isFolder = true;
 				cFolder.parent = getStringValue(f, PARENT_FOLDERKEY, FolderItemRecord.ROOT_KEY);
 				cFolder.privacy = getStringValue(f, PRIVACY);
-				Log.d("INSERT FOLDER IN ROOT", cFolder.descr());
+				MyLog.d("INSERT FOLDER IN ROOT", cFolder.descr());
 
 				folder.subFolders.add(cFolder);
 			}
@@ -71,7 +70,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 			files = folderContent.getJSONArray(FILES);
 			for (int i = 0; i < files.length(); i++) {
 				JSONObject f = (JSONObject) files.get(i);
-				Log.d("XML", f.toString());
+				MyLog.d("XML", f.toString());
 				FileRecord file = new FileRecord();
 				file.setCreated(getStringValue(f, CREATED));
 				file.desc = getStringValue(f, DESC);

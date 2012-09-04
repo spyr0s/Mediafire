@@ -3,12 +3,12 @@ package gr.valor.mediafire.activities;
 import gr.valor.mediafire.Mediafire;
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.database.FolderRecord;
+import gr.valor.mediafire.helpers.MyLog;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,8 +23,8 @@ public abstract class BaseActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		// this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		mediafire = (Mediafire) getApplication();
+
 	}
 
 	@Override
@@ -39,13 +39,15 @@ public abstract class BaseActivity extends Activity {
 		Intent intent;
 		switch (item.getItemId()) {
 		case R.id.menu_settings:
-			Log.d(TAG, "Calling menu Preferences");
+			MyLog.d(TAG, "Calling menu Preferences");
 			startActivity(new Intent(this, PrefsActivity.class));
 			break;
 		case R.id.menu_logout:
-			Log.d(TAG, "Calling menu Logout");
+			MyLog.d(TAG, "Calling menu Logout");
 			mediafire.removePref(Mediafire.PREF_KEY_EMAIL);
 			mediafire.removePref(Mediafire.PREF_KEY_PASSWORD);
+			mediafire.removePref(Mediafire.PREF_KEY_SESSION_TOKEN);
+			mediafire.removePref(Mediafire.PREF_KEY_SESSION_TOKEN_TIME);
 			mediafire.setEmail(null);
 			mediafire.setPassword(null);
 			mediafire.setSessionToken(null);
@@ -54,7 +56,7 @@ public abstract class BaseActivity extends Activity {
 			startActivity(intent);
 			break;
 		case R.id.menu_full_import:
-			Log.d(TAG, "Calling menu Full import");
+			MyLog.d(TAG, "Calling menu Full import");
 			mediafire.setCurrentFolder(new FolderRecord());
 			mediafire.setFullImport(true);
 			intent = new Intent(this, FolderActivity.class);

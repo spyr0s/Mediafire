@@ -1,5 +1,7 @@
 package gr.valor.mediafire.database;
 
+import gr.valor.mediafire.helpers.MyLog;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -7,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 public class FolderRecord extends FolderItemRecord {
 
@@ -37,15 +37,14 @@ public class FolderRecord extends FolderItemRecord {
 		createFromCursor(cur);
 	}
 
-	public FolderRecord(SQLiteDatabase db, String fk) throws Exception {
-
+	public FolderRecord(String fk) throws Exception {
 		String sql = "SELECT " + Columns.Folders.FOLDERKEY + ", " + Columns.Items.NAME + ", " + Columns.Items.TYPE + ", "
 				+ Columns.Items.PARENT + ", " + Columns.Items.CREATED + ", " + Columns.Folders.FOLDERS + ", " + Columns.Folders.FILES
 				+ " , " + Columns.Items.INSERTED + ", " + Columns.Items.FLAG + " , " + Columns.Items.PRIVACY + ", "
 				+ Columns.Folders.SHARED + ", " + Columns.Folders.REVISION + ", " + Columns.Folders.EPOCH + " , "
 				+ Columns.Folders.DROPBOX_ENABLED + " FROM " + Mediabase.TABLE_ITEMS + " i " + " LEFT JOIN " + Mediabase.TABLE_FOLDERS
 				+ " fo" + " ON i." + Columns.Items.KEY + " = fo." + Columns.Folders.FOLDERKEY + " WHERE " + Columns.Items.KEY + " = ?;";
-		Cursor cur = db.rawQuery(sql, new String[] { fk });
+		Cursor cur = getDb().rawQuery(sql, new String[] { fk });
 		if (cur.getCount() != 1) {
 			cur.close();
 			throw new Exception(fk + " folder not found in database");
@@ -57,40 +56,40 @@ public class FolderRecord extends FolderItemRecord {
 
 	}
 
-	public void updateDb(SQLiteDatabase db, boolean fullImport) {
-		Log.i(TAG, "Updating db");
+	public void updateDb(boolean fullImport) {
+		MyLog.i(TAG, "Updating db");
 		if (fullImport) {
 			this.fullImport = true;
-			Mediabase.truncateTables(db);
+			Mediabase.truncateTables(getDb());
 		}
-		insertFolderInDb(db, this, true);
+		insertFolderInDb(this, true);
 
 	}
 
-	private void insertFolderInDb(SQLiteDatabase db, FolderRecord folderRecord, boolean isRoot) {
+	private void insertFolderInDb(FolderRecord folderRecord, boolean isRoot) {
 		if (isRoot || folderRecord.folderKey == FolderRecord.ROOT_KEY) {
 			folderRecord.inserted = System.currentTimeMillis() / 1000;
 			// Check for deleted items
-			removeDeletedItems(db, folderRecord);
+			removeDeletedItems(folderRecord);
 		} else {
 			folderRecord.inserted = 0;
 		}
-		folderRecord.save(db);
+		folderRecord.save();
 
 		for (Iterator<FolderRecord> it = folderRecord.subFolders.iterator(); it.hasNext();) {
 			FolderRecord f = it.next();
-			insertFolderInDb(db, f, fullImport);
+			insertFolderInDb(f, fullImport);
 		}
 		for (Iterator<FileRecord> it = folderRecord.files.iterator(); it.hasNext();) {
 			FileRecord f = it.next();
-			f.save(db);
+			f.save();
 		}
 
 	}
 
-	private void removeDeletedItems(SQLiteDatabase db, FolderRecord folderRecord) {
-		Cursor c = db.query(Mediabase.TABLE_ITEMS, new String[] { Columns.Items.KEY, Columns.Items.TYPE }, Columns.Items.PARENT + " = ?",
-				new String[] { folderRecord.folderKey }, null, null, null, null);
+	private void removeDeletedItems(FolderRecord folderRecord) {
+		Cursor c = getDb().query(Mediabase.TABLE_ITEMS, new String[] { Columns.Items.KEY, Columns.Items.TYPE },
+				Columns.Items.PARENT + " = ?", new String[] { folderRecord.folderKey }, null, null, null, null);
 		while (c.moveToNext()) {
 			String key = c.getString(c.getColumnIndex(Columns.Items.KEY));
 			String type = c.getString(c.getColumnIndex(Columns.Items.TYPE));
@@ -116,11 +115,11 @@ public class FolderRecord extends FolderItemRecord {
 				}
 			}
 			if (!fileExists) {
-				db.delete(Mediabase.TABLE_ITEMS, Columns.Items.KEY + " = ? ", new String[] { key });
+				getDb().delete(Mediabase.TABLE_ITEMS, Columns.Items.KEY + " = ? ", new String[] { key });
 				if (type.equals(FolderItemRecord.TYPE_FOLDER)) {
-					db.delete(Mediabase.TABLE_FOLDERS, Columns.Folders.FOLDERKEY + " = ? ", new String[] { key });
+					getDb().delete(Mediabase.TABLE_FOLDERS, Columns.Folders.FOLDERKEY + " = ? ", new String[] { key });
 				} else if (type.equals(FolderItemRecord.TYPE_FILE)) {
-					db.delete(Mediabase.TABLE_FILES, Columns.Files.QUICKKEY + " = ? ", new String[] { key });
+					getDb().delete(Mediabase.TABLE_FILES, Columns.Files.QUICKKEY + " = ? ", new String[] { key });
 				}
 			}
 		}
@@ -144,34 +143,36 @@ public class FolderRecord extends FolderItemRecord {
 		shared = cur.getString(cur.getColumnIndex(Columns.Folders.SHARED));
 	}
 
-	public boolean save(SQLiteDatabase db) {
-		if (!this.isNew(db, folderKey)) {
-			Log.d(TAG, "Updating folder " + this.toString() + " " + inserted);
+	public boolean save() {
+		if (!this.isNew(folderKey)) {
+			MyLog.d(TAG, "Updating folder " + this.toString() + " " + inserted);
 			String queryItems = "UPDATE " + Mediabase.TABLE_ITEMS + " SET " + Columns.Items.KEY + "= ? ," + Columns.Items.TYPE + " = ? ,"
 					+ Columns.Items.PARENT + " = ? , " + Columns.Items.NAME + " = ? ," + Columns.Items.DESC + " =? ," + Columns.Items.TAGS
 					+ "=? , " + Columns.Items.FLAG + "=? ," + Columns.Items.PRIVACY + "=?," + Columns.Items.CREATED + "=?,  "
 					+ Columns.Items.INSERTED + " = ?  WHERE " + Columns.Items.KEY + " = ? ";
 			Object[] paramItems = new Object[] { folderKey, FolderItemRecord.TYPE_FOLDER, parent, name, desc, tags, flag, privacy,
 					getCreated(), inserted, folderKey };
-			db.execSQL(queryItems, paramItems);
+			getDb().execSQL(queryItems, paramItems);
 			String queryFolder = "UPDATE " + Mediabase.TABLE_FOLDERS + " SET " + Columns.Folders.FOLDERKEY + " = ? ,"
 					+ Columns.Folders.FOLDERS + "=? ," + Columns.Folders.SHARED + "=? ," + Columns.Folders.REVISION + "=?,"
 					+ Columns.Folders.EPOCH + "=? ," + Columns.Folders.DROPBOX_ENABLED + "=?," + Columns.Folders.FILES + " = ? "
 					+ " WHERE " + Columns.Folders.FOLDERKEY + "= ?";
 			Object[] paramFolders = new Object[] { folderKey, folderCount, shared, revision, epoch, dropboxEnabled, fileCount, folderKey };
-			db.execSQL(queryFolder, paramFolders);
+			getDb().execSQL(queryFolder, paramFolders);
 		} else {
-			Log.d(TAG, "Importing folder " + this.toString() + " " + inserted);
-			db.execSQL("INSERT INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
-					+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
-					+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + ", " + Columns.Items.INSERTED + ")"
-					+ " VALUES (?,?,?,?,?,?,?, ?, ? , ?)", new Object[] { folderKey, FolderItemRecord.TYPE_FOLDER, parent, name, desc,
-					tags, flag, privacy, getCreated(), inserted });
+			MyLog.d(TAG, "Importing folder " + this.toString() + " " + inserted);
+			getDb().execSQL(
+					"INSERT INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
+							+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
+							+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + ", "
+							+ Columns.Items.INSERTED + ")" + " VALUES (?,?,?,?,?,?,?, ?, ? , ?)",
+					new Object[] { folderKey, FolderItemRecord.TYPE_FOLDER, parent, name, desc, tags, flag, privacy, getCreated(), inserted });
 
-			db.execSQL("INSERT OR IGNORE INTO " + Mediabase.TABLE_FOLDERS + "(" + Columns.Folders.FOLDERKEY + "," + Columns.Folders.FOLDERS
-					+ "," + Columns.Folders.SHARED + "," + Columns.Folders.REVISION + "," + Columns.Folders.EPOCH + ","
-					+ Columns.Folders.DROPBOX_ENABLED + "," + Columns.Folders.FILES + ")" + " VALUES (?,?,?,?,?,?,?)", new Object[] {
-					folderKey, folderCount, shared, revision, epoch, dropboxEnabled, fileCount });
+			getDb().execSQL(
+					"INSERT OR IGNORE INTO " + Mediabase.TABLE_FOLDERS + "(" + Columns.Folders.FOLDERKEY + "," + Columns.Folders.FOLDERS
+							+ "," + Columns.Folders.SHARED + "," + Columns.Folders.REVISION + "," + Columns.Folders.EPOCH + ","
+							+ Columns.Folders.DROPBOX_ENABLED + "," + Columns.Folders.FILES + ")" + " VALUES (?,?,?,?,?,?,?)",
+					new Object[] { folderKey, folderCount, shared, revision, epoch, dropboxEnabled, fileCount });
 		}
 
 		return true;
@@ -183,20 +184,20 @@ public class FolderRecord extends FolderItemRecord {
 	}
 
 	public boolean isCached(long cacheDuration) {
-		Log.d(TAG, "Checking for cached folder in cache dur:" + cacheDuration);
-		Log.d(TAG, "now:" + (System.currentTimeMillis() / 1000) + "-" + this.inserted + " = "
+		MyLog.d(TAG, "Checking for cached folder in cache dur:" + cacheDuration);
+		MyLog.d(TAG, "now:" + (System.currentTimeMillis() / 1000) + "-" + this.inserted + " = "
 				+ (System.currentTimeMillis() / 1000 - this.inserted));
 		return System.currentTimeMillis() / 1000 - this.inserted < cacheDuration;
 
 	}
 
-	public String getFullPath(SQLiteDatabase db) {
+	public String getFullPath() {
 		String path = this.name;
 		try {
-			FolderRecord f = new FolderRecord(db, this.parent);
+			FolderRecord f = new FolderRecord(this.parent);
 			while (f.parent != null) {
 				path = f.name + "/" + path;
-				f = new FolderRecord(db, f.parent);
+				f = new FolderRecord(f.parent);
 			}
 			path = f.name + "/" + path;
 		} catch (Exception e) {
@@ -219,7 +220,7 @@ public class FolderRecord extends FolderItemRecord {
 			folderItems.clear();
 		}
 		if (this.parent != null) {
-			Log.d(TAG, "Adding back header");
+			MyLog.d(TAG, "Adding back header");
 			subFolders.add(0, FolderRecord.createBackFolder());
 
 		}

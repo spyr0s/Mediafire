@@ -6,7 +6,7 @@ import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.database.FileRecord;
 import gr.valor.mediafire.database.FolderItemRecord;
-import gr.valor.mediafire.database.Mediabase;
+import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.Elements;
 import gr.valor.mediafire.parser.SimpleParser;
 
@@ -19,7 +19,6 @@ import java.util.Map;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.Toast;
 
 public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements ApiUrls {
@@ -52,9 +51,7 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 		super.onPostExecute(success);
 		this.d.dismiss();
 		if (success) {
-			Mediabase m = new Mediabase(activity);
-			this.fileRecord.save(m.getWritableDatabase());
-			m.close();
+			this.fileRecord.save();
 			Map<String, String> item = activity.folderItems.get(position);
 			fileRecord.updateAdapterItem(item);
 			item.put(FolderItemRecord.PRIVACY, fileRecord.privacy);
@@ -66,7 +63,7 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 
 	@Override
 	protected Boolean doInBackground(Void... params) {
-		Log.d(TAG, "Connecting...");
+		MyLog.d(TAG, "Connecting...");
 		ArrayList<String> attr = new ArrayList<String>();
 		attr.add(SESSION_TOKEN + "=" + activity.mediafire.getSessionToken());
 		attr.add(RESPONSE_FORMAT + "=" + JSON);
@@ -77,7 +74,7 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 
 			if (in == null) {
 				Toast.makeText(activity, R.string.error_cant_read, Toast.LENGTH_LONG).show();
-				Log.e(TAG, "Could not read from " + UPDATE_FILE_URL);
+				MyLog.e(TAG, "Could not read from " + UPDATE_FILE_URL);
 			}
 
 			StringBuilder builder = new StringBuilder();

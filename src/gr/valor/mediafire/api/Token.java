@@ -1,13 +1,11 @@
 package gr.valor.mediafire.api;
 
+import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.Elements;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.util.Log;
 
 public abstract class Token implements Elements, ApiUrls {
 	public static String TAG;
@@ -41,8 +39,8 @@ public abstract class Token implements Elements, ApiUrls {
 	}
 
 	public void run(Object... params) throws IOException {
-		Log.d(TAG, "Getting the token in background");
-			getToken();
+		MyLog.d(TAG, "Getting the token in background");
+		getToken();
 	}
 
 	protected abstract void getToken() throws IOException;

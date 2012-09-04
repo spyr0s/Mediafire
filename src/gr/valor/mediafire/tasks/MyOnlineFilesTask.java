@@ -6,7 +6,7 @@ import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.database.FileRecord;
 import gr.valor.mediafire.database.FolderRecord;
-import gr.valor.mediafire.database.Mediabase;
+import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.Elements;
 import gr.valor.mediafire.parser.MyFilesJSONParser;
 
@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import android.app.ProgressDialog;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.Toast;
 
 public class MyOnlineFilesTask extends AsyncTask<FolderRecord, Void, FolderRecord> implements ApiUrls, Elements {
@@ -67,11 +66,8 @@ public class MyOnlineFilesTask extends AsyncTask<FolderRecord, Void, FolderRecor
 		super.onPostExecute(result);
 
 		try {
-			Mediabase mb = new Mediabase(activity);
-			SQLiteDatabase db = mb.getWritableDatabase();
-			result.updateDb(db, mediafire.isFullImport());
+			result.updateDb(mediafire.isFullImport());
 			activity.getOfflineFolderItems();
-			db.close();
 			mediafire.setForceOnline(false);
 			activity.listView.onRefreshComplete();
 			activity.createList();
@@ -124,7 +120,7 @@ public class MyOnlineFilesTask extends AsyncTask<FolderRecord, Void, FolderRecor
 				in = connection.connect(DOMAIN + "/" + MYFILES_URL, attr);
 
 				if (in == null) {
-					Log.e(TAG, "Could not read from " + GET_LOGIN_TOKEN_URL);
+					MyLog.e(TAG, "Could not read from " + GET_LOGIN_TOKEN_URL);
 				}
 
 				StringBuilder builder = new StringBuilder();

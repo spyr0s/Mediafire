@@ -4,16 +4,14 @@ import gr.valor.mediafire.R;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.database.FileRecord;
 import gr.valor.mediafire.database.FolderItemRecord;
-import gr.valor.mediafire.database.Mediabase;
 import gr.valor.mediafire.helpers.FileIcon;
+import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.tasks.GetFileLinkTask;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.res.Resources;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -56,10 +54,8 @@ public class ViewFileActivity extends BaseActivity {
 	}
 
 	private void createView() {
-		Mediabase m = new Mediabase(this);
-		SQLiteDatabase db = m.getReadableDatabase();
 		try {
-			fileRecord = new FileRecord(db, this.quickkey);
+			fileRecord = new FileRecord(this.quickkey);
 			setTitle("File - " + fileRecord.filename);
 			viewFilename.setText(fileRecord.filename);
 			setIcon();
@@ -73,8 +69,6 @@ public class ViewFileActivity extends BaseActivity {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} finally {
-			db.close();
 		}
 
 	}
@@ -104,7 +98,7 @@ public class ViewFileActivity extends BaseActivity {
 	}
 
 	public void downloadFile(View view) {
-		Log.d(TAG, "Downloading file " + fileRecord.filename);
+		MyLog.d(TAG, "Downloading file " + fileRecord.filename);
 		if (!mediafire.isOnline()) {
 			Toast.makeText(this, "There is no internet connection", Toast.LENGTH_SHORT).show();
 		} else {

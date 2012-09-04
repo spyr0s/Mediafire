@@ -6,6 +6,7 @@ import gr.valor.mediafire.activities.LoginActivity;
 import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.helpers.Helper;
+import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.SessionToken;
 
 import java.io.BufferedReader;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.Toast;
 
 public class LoginTask extends AsyncTask<String, Void, String> implements ApiUrls {
@@ -50,13 +50,13 @@ public class LoginTask extends AsyncTask<String, Void, String> implements ApiUrl
 		this.d.dismiss();
 		super.onPostExecute(result);
 		if (result == null || result.equals("null")) {
-			Log.d(TAG, "Wrong credentials");
+			MyLog.d(TAG, "Wrong credentials");
 			Toast.makeText(this.activity, "Wrong username or password", Toast.LENGTH_LONG).show();
 		} else {
-			Log.d(TAG, "Setting credentials");
+			MyLog.d(TAG, "Setting credentials");
 			activity.mediafire.setSessionToken(result);
 			activity.mediafire.setSessionTokenCreationTime(System.currentTimeMillis() / 1000);
-			Log.d(TAG, "Saving credentials and showing folders");
+			MyLog.d(TAG, "Saving credentials and showing folders");
 			activity.mediafire.saveCredentials();
 			activity.showFolders();
 
@@ -66,7 +66,7 @@ public class LoginTask extends AsyncTask<String, Void, String> implements ApiUrl
 
 	@Override
 	protected String doInBackground(String... arg0) {
-		Log.d(TAG, "Connecting...");
+		MyLog.d(TAG, "Connecting...");
 		ArrayList<String> attr = new ArrayList<String>();
 		attr.add(EMAIL + "=" + email);
 		attr.add(PASSWORD + "=" + password);
@@ -79,7 +79,7 @@ public class LoginTask extends AsyncTask<String, Void, String> implements ApiUrl
 
 			if (in == null) {
 				Toast.makeText(activity, R.string.error_cant_read, Toast.LENGTH_LONG).show();
-				Log.e(TAG, "Could not read from " + GET_SESSION_TOKEN_URL);
+				MyLog.e(TAG, "Could not read from " + GET_SESSION_TOKEN_URL);
 			}
 
 			StringBuilder builder = new StringBuilder();
@@ -92,7 +92,7 @@ public class LoginTask extends AsyncTask<String, Void, String> implements ApiUrl
 			SessionToken s = new SessionToken(response, false);
 			return s.sessionToken;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			MyLog.d(TAG, "I/O Exception");
 			e.printStackTrace();
 		} finally {
 			try {

@@ -1,6 +1,5 @@
 package gr.valor.mediafire.helpers;
 
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -16,22 +15,22 @@ public class ActivitySwipeDetector implements View.OnTouchListener {
 	}
 
 	public void onRightToLeftSwipe(View v) {
-		Log.i(logTag, "RightToLeftSwipe!");
+		MyLog.i(logTag, "RightToLeftSwipe!");
 		activity.right2left(v);
 	}
 
 	public void onLeftToRightSwipe(View v) {
-		Log.i(logTag, "LeftToRightSwipe!");
+		MyLog.i(logTag, "LeftToRightSwipe!");
 		activity.left2right(v);
 	}
 
 	public void onTopToBottomSwipe(View v) {
-		Log.i(logTag, "onTopToBottomSwipe!");
+		MyLog.i(logTag, "onTopToBottomSwipe!");
 		activity.top2bottom(v);
 	}
 
 	public void onBottomToTopSwipe(View v) {
-		Log.i(logTag, "onBottomToTopSwipe!");
+		MyLog.i(logTag, "onBottomToTopSwipe!");
 		activity.bottom2top(v);
 	}
 
@@ -61,7 +60,7 @@ public class ActivitySwipeDetector implements View.OnTouchListener {
 					return true;
 				}
 			} else {
-				Log.i(logTag, "Swipe was only " + Math.abs(deltaX) + " long, need at least " + MIN_DISTANCE);
+				MyLog.i(logTag, "Swipe was only " + Math.abs(deltaX) + " long, need at least " + MIN_DISTANCE);
 				return false; // We don't consume the event
 			}
 
@@ -77,7 +76,7 @@ public class ActivitySwipeDetector implements View.OnTouchListener {
 					return true;
 				}
 			} else {
-				Log.i(logTag, "Swipe was only " + Math.abs(deltaX) + " long, need at least " + MIN_DISTANCE);
+				MyLog.i(logTag, "Swipe was only " + Math.abs(deltaX) + " long, need at least " + MIN_DISTANCE);
 				return false; // We don't consume the event
 			}
 
