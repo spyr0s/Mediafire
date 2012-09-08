@@ -1,5 +1,7 @@
 package gr.valor.mediafire.database;
 
+import gr.valor.mediafire.Mediafire;
+
 import java.util.Map;
 
 import android.database.Cursor;
@@ -44,6 +46,7 @@ public class FileRecord extends FolderItemRecord {
 	@Override
 	protected void createFromCursor(Cursor cur) {
 		quickkey = cur.getString(cur.getColumnIndex(Columns.Files.QUICKKEY));
+		account_email = Mediafire.getAccountEmail();
 		itemType = FolderItemRecord.TYPE_FILE;
 		filename = cur.getString(cur.getColumnIndex(Columns.Items.NAME));
 		parent = cur.getString(cur.getColumnIndex(Columns.Items.PARENT));
@@ -60,12 +63,12 @@ public class FileRecord extends FolderItemRecord {
 	public boolean save() {
 
 		if (!this.isNew(quickkey)) {
-			String queryItems = "UPDATE " + Mediabase.TABLE_ITEMS + " SET " + Columns.Items.KEY + "= ? ," + Columns.Items.TYPE + " = ? ,"
-					+ Columns.Items.PARENT + " = ? , " + Columns.Items.NAME + " = ? ," + Columns.Items.DESC + " =? ," + Columns.Items.TAGS
-					+ "=? , " + Columns.Items.FLAG + "=? ," + Columns.Items.PRIVACY + "=?," + Columns.Items.CREATED + "=? " + " WHERE "
-					+ Columns.Items.KEY + " = ? ";
-			Object[] paramItems = new Object[] { quickkey, FolderItemRecord.TYPE_FILE, parent, filename, desc, tags, flag, privacy,
-					getCreated(), quickkey };
+			String queryItems = "UPDATE " + Mediabase.TABLE_ITEMS + " SET " + Columns.Items.KEY + "= ? ," + Columns.Items.ACCOUNT_EMAIL
+					+ "= ? ," + Columns.Items.TYPE + " = ? ," + Columns.Items.PARENT + " = ? , " + Columns.Items.NAME + " = ? ,"
+					+ Columns.Items.DESC + " =? ," + Columns.Items.TAGS + "=? , " + Columns.Items.FLAG + "=? ," + Columns.Items.PRIVACY
+					+ "=?," + Columns.Items.CREATED + "=? " + " WHERE " + Columns.Items.KEY + " = ? ";
+			Object[] paramItems = new Object[] { quickkey, account_email, FolderItemRecord.TYPE_FILE, parent, filename, desc, tags, flag,
+					privacy, getCreated(), quickkey };
 			getDb().execSQL(queryItems, paramItems);
 			String queryFolder = "UPDATE " + Mediabase.TABLE_FILES + " SET " + Columns.Files.QUICKKEY + "=?," + Columns.Files.DOWNLOADS
 					+ "=?," + Columns.Files.FILETYPE + "=?," + Columns.Files.PASSWORD_PROTECTED + "=?," + Columns.Files.SIZE + "=? WHERE "
@@ -74,11 +77,12 @@ public class FileRecord extends FolderItemRecord {
 			getDb().execSQL(queryFolder, paramFolders);
 		} else {
 			getDb().execSQL(
-					"INSERT OR IGNORE INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.TYPE + ","
-							+ Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + "," + Columns.Items.TAGS + ","
-							+ Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED + " )"
-							+ " VALUES (?,?,?,?,?,?,?,?,?)",
-					new Object[] { quickkey, FolderItemRecord.TYPE_FILE, parent, filename, desc, tags, flag, privacy, getCreated() });
+					"INSERT OR IGNORE INTO " + Mediabase.TABLE_ITEMS + "(" + Columns.Items.KEY + "," + Columns.Items.ACCOUNT_EMAIL + ","
+							+ Columns.Items.TYPE + "," + Columns.Items.PARENT + "," + Columns.Items.NAME + "," + Columns.Items.DESC + ","
+							+ Columns.Items.TAGS + "," + Columns.Items.FLAG + "," + Columns.Items.PRIVACY + "," + Columns.Items.CREATED
+							+ " )" + " VALUES (?,?,?,?,?,?,?,?,?,?)",
+					new Object[] { quickkey, account_email, FolderItemRecord.TYPE_FILE, parent, filename, desc, tags, flag, privacy,
+							getCreated() });
 
 			getDb().execSQL(
 					"INSERT OR IGNORE INTO " + Mediabase.TABLE_FILES + "(" + Columns.Files.QUICKKEY + "," + Columns.Files.DOWNLOADS + ","
@@ -121,5 +125,12 @@ public class FileRecord extends FolderItemRecord {
 		map.put(SIZE, getSize());
 		map.put(SIZE_ICON, YES);
 		return map;
+	}
+
+	public void delete() {
+		getDb().execSQL("DELETE FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + " = ?", new String[] { this.quickkey });
+		getDb().execSQL("DELETE FROM " + Mediabase.TABLE_FILES + " WHERE " + Columns.Files.QUICKKEY + " = ?",
+				new String[] { this.quickkey });
+
 	}
 }

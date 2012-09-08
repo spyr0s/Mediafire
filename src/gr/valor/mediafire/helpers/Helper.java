@@ -1,6 +1,7 @@
 package gr.valor.mediafire.helpers;
 
 import gr.valor.mediafire.api.ApiUrls;
+import gr.valor.mediafire.database.FolderRecord;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -87,6 +88,17 @@ public class Helper {
 		}
 		return encoded;
 
+	}
+
+	public static int getIndex(ArrayList<FolderRecord> folders, String fk) {
+		int i = -1;
+		for (FolderRecord folder : folders) {
+			i++;
+			if (folder.folderKey.equals(fk)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 }

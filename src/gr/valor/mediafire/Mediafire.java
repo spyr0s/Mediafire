@@ -42,6 +42,8 @@ public class Mediafire extends Application implements PrefConstants {
 	private static Mediabase mediabase = null;
 	private static SQLiteDatabase database;
 
+	private static String accountEmail;
+
 	private String downloadPath;
 
 	@Override
@@ -192,7 +194,7 @@ public class Mediafire extends Application implements PrefConstants {
 		} else {
 			FolderRecord f = new FolderRecord();
 			try {
-				f = new FolderRecord(FolderRecord.ROOT_KEY);
+				f = new FolderRecord(FolderRecord.getRootKey());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -278,6 +280,7 @@ public class Mediafire extends Application implements PrefConstants {
 
 	public void setEmail(String email) {
 		this.email = email;
+		Mediafire.accountEmail = email;
 	}
 
 	public String getPassword() {
@@ -396,6 +399,10 @@ public class Mediafire extends Application implements PrefConstants {
 
 		}
 		return (mExternalStorageAvailable) && (mExternalStorageWriteable);
+	}
+
+	public static String getAccountEmail() {
+		return Mediafire.accountEmail;
 	}
 
 }

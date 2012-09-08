@@ -10,5 +10,6 @@
     <string name="menu_viewFile">File Info</string>
     <string name="menu_makePrivate">Make Private</string>
     <string name="menu_makePublic">Make Public</string>
+    <string name="menu_deleteFile">Delete</string>
 
 </resources>

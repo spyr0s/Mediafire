@@ -13,6 +13,9 @@ public interface ApiUrls {
 	String RENEW_SESSION_TOKEN_URL = "user/renew_session_token.php";
 	String GET_LINKS_URL = "file/get_links.php";
 	String UPDATE_FILE_URL = "file/update.php";
+	String UPDATE_FOLDER_URL = "folder/update.php";
+	String DELETE_FILE_URL = "file/delete.php";
+	String CREATE_FOLDER_URL = "folder/create.php";
 
 	// PARAMETERS
 	String SESSION_TOKEN = "session_token";
@@ -33,4 +36,6 @@ public interface ApiUrls {
 	String PRIVACY = "privacy";
 	String PUBLIC = "public";
 	String PRIVATE = "private";
+	String PARENT_KEY = "parent_key";
+	String FOLDER_NAME = "foldername";
 }

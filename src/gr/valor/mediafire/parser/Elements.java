@@ -10,6 +10,10 @@ public interface Elements {
 	String ACTION_GET_FOLDER_CONTENT = "folder/get_content";
 	String ACTION_GET_FILE_LINK = "file/get_links";
 	String ACTION_UPDATE_FILE = "file/update";
+	String ACTION_UPDATE_FOLDER = "folder/update";
+	String ACTION_DELETE_FILE = "file/delete";
+	String ACTION_CREATE_FOLDER = "folder/create";
+
 	String SUCCESS = "Success";
 	String RESULT = "result";
 	String RESPONSE = "response";
@@ -41,9 +45,11 @@ public interface Elements {
 	String FILENAME = "filename";
 	String DOWNLOADS = "downloads";
 	String SIZE = "size";
+	String FOLDER_KEY = "folder_key";
 
 	// DOWNLOAD FILE
 	String LINKS = "links";
 	String LINK = "link";
 	String DIRECT_DOWNLOAD = "direct_download";
+
 }

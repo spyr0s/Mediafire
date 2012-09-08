@@ -6,7 +6,7 @@ import gr.valor.mediafire.activities.LoginActivity;
 import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.helpers.MyLog;
-import gr.valor.mediafire.parser.SessionToken;
+import gr.valor.mediafire.parser.SessionTokenParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -66,7 +66,7 @@ public class RenewTokenTask extends AsyncTask<String, Void, String> implements A
 				builder.append(line);
 			}
 			String response = builder.toString();
-			SessionToken s = new SessionToken(response, true);
+			SessionTokenParser s = new SessionTokenParser(response, true);
 			return s.sessionToken;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

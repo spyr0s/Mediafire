@@ -15,14 +15,18 @@ import gr.valor.mediafire.helpers.SwipeInterface;
 import gr.valor.mediafire.listeners.FolderItemsListener;
 import gr.valor.mediafire.listeners.FolderItemsLongClickListener;
 import gr.valor.mediafire.listeners.FolderRefreshListener;
+import gr.valor.mediafire.tasks.CreateFolderTask;
+import gr.valor.mediafire.tasks.DeleteFileTask;
 import gr.valor.mediafire.tasks.MyOnlineFilesTask;
 import gr.valor.mediafire.tasks.UpdateFileTask;
+import gr.valor.mediafire.tasks.UpdateFolderTask;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -33,6 +37,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -190,7 +195,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 
 	@Override
 	public void onBackPressed() {
-		if (mediafire.getCurrentFolder().folderKey.equals(FolderRecord.ROOT_KEY)) {
+		if (mediafire.getCurrentFolder().folderKey.equals(FolderRecord.getRootKey())) {
 			AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 			alertDialog.setTitle("Exit Application?");
 			alertDialog.setMessage("Do you want to exit the application?");
@@ -237,18 +242,27 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 					menu.removeItem(R.id.menu_make_private);
 				}
 				if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FOLDER)) {
-					menu.setHeaderTitle("Folder Actions");
+					menu.setHeaderTitle("Actions");
 					menu.setHeaderIcon(R.drawable.icon_folder);
 					menu.removeItem(R.id.menu_viewFile);
+					menu.removeItem(R.id.menu_delete_file);
 
 				} else if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_BACK)) {
-
+					menu.setHeaderTitle("Actions");
+					menu.removeItem(R.id.menu_delete_file);
+					menu.removeItem(R.id.menu_make_public);
+					menu.removeItem(R.id.menu_make_private);
 					menu.removeItem(R.id.menu_viewFile);
-					menu.removeItem(R.id.menu_createFolder);
+
+				} else if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_EMPTY)) {
+					menu.setHeaderTitle("Actions");
+					menu.removeItem(R.id.menu_delete_file);
+					menu.removeItem(R.id.menu_make_public);
+					menu.removeItem(R.id.menu_make_private);
+					menu.removeItem(R.id.menu_viewFile);
 				} else {
 					menu.setHeaderTitle("File Actions");
 					menu.setHeaderIcon(R.drawable.icon_file);
-					menu.removeItem(R.id.menu_createFolder);
 				}
 
 			}
@@ -258,33 +272,38 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
+		if (!mediafire.isOnline() && item.getItemId() != R.id.menu_viewFile) {
+			Toast.makeText(this, "There is no internet connection", Toast.LENGTH_SHORT).show();
+			return false;
+		}
 		Map<String, String> select = null;
+		FileRecord f = null;
+		FolderRecord folder;
+		String quickkey = null;
+		final Connection connection = new Connection(this);
+		ArrayList<String> attr = new ArrayList<String>();
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		if (info != null) {
 			select = (Map<String, String>) listView.getItemAtPosition(info.position);
 		}
 		switch (item.getItemId()) {
+		// FILE VIEW
 		case R.id.menu_viewFile:
 			Intent viewFileIntent = new Intent(this, ViewFileActivity.class);
 			viewFileIntent.putExtra(ViewFileActivity.FILE_QUICKKEY, select.get(FolderItemRecord.QUICKKEY));
 			startActivity(viewFileIntent);
 			return true;
+			// MAKE PRIVATE - PUBLIC
 		case R.id.menu_make_private:
 		case R.id.menu_make_public:
-			if (!mediafire.isOnline()) {
-				Toast.makeText(this, "There is no internet connection", Toast.LENGTH_SHORT).show();
-				return false;
-			}
-			ArrayList<String> attr = new ArrayList<String>();
-			String quickkey = select.get(FolderItemRecord.QUICKKEY);
+			quickkey = select.get(FolderItemRecord.QUICKKEY);
 			String privacy = (select.get(FolderItemRecord.PRIVACY).equals(FolderItemRecord.PRIVACY_PRIVATE) ? ApiUrls.PUBLIC
 					: ApiUrls.PRIVATE);
-			attr.add(ApiUrls.QUICKKEY + "=" + quickkey);
+
 			attr.add(ApiUrls.PRIVACY + "=" + privacy);
 			if (select.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FILE)) {
-				Connection connection = new Connection(this);
-				FileRecord f;
 				try {
+					attr.add(ApiUrls.QUICKKEY + "=" + quickkey);
 					f = new FileRecord(quickkey);
 					f.privacy = privacy;
 					UpdateFileTask update = new UpdateFileTask(this, connection, attr, f, info.position);
@@ -295,11 +314,90 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 				}
 
 			} else {
-
+				try {
+					String folderKey = select.get(FolderItemRecord.FOLDERKEY);
+					attr.add(ApiUrls.FOLDER_KEY + "=" + folderKey);
+					folder = new FolderRecord(folderKey);
+					folder.privacy = privacy;
+					UpdateFolderTask update = new UpdateFolderTask(this, connection, attr, folder, info.position);
+					update.execute();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 			return true;
+			// DELETE FILE
+		case R.id.menu_delete_file:
+			attr = new ArrayList<String>();
+			quickkey = select.get(FolderItemRecord.QUICKKEY);
+			attr.add(ApiUrls.QUICKKEY + "=" + quickkey);
+			try {
+				f = new FileRecord(quickkey);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			final DeleteFileTask update = new DeleteFileTask(this, connection, attr, f, info.position);
+			AlertDialog.Builder alert = new AlertDialog.Builder(this);
+			alert.setTitle("Delete file");
+			alert.setMessage("Do you really want to delete \"" + f.filename + "\"");
+			alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+					update.execute();
+				}
+			});
 
+			alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					return;
+				}
+			});
+
+			alert.show();
+			return true;
+			// CREATE FOLDER
+		case R.id.menu_createFolder:
+
+			Builder newFolderAlert = new AlertDialog.Builder(this);
+			final String selectedName;
+			final String selectedKey;
+			attr = new ArrayList<String>();
+
+			if (select.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_FOLDER)) {
+				selectedName = select.get(FolderItemRecord.NAME);
+				selectedKey = select.get(FolderItemRecord.FOLDERKEY);
+			} else {
+				selectedName = mediafire.getCurrentFolder().name;
+				selectedKey = mediafire.getCurrentFolder().folderKey;
+			}
+
+			newFolderAlert.setTitle("Create folder in " + selectedName);
+			final EditText foldername = new EditText(this);
+			foldername.setText("");
+			newFolderAlert.setView(foldername);
+			newFolderAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					ArrayList<String> attr = new ArrayList<String>();
+					attr.add(ApiUrls.PARENT_KEY + "=" + selectedKey);
+					attr.add(ApiUrls.FOLDER_NAME + "=" + foldername.getText());
+					CreateFolderTask createFolder = new CreateFolderTask(FolderActivity.this, connection, attr);
+					createFolder.execute();
+					dialog.dismiss();
+				}
+			});
+			newFolderAlert.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.dismiss();
+				}
+			});
+
+			AlertDialog alertFolders = newFolderAlert.create();
+			alertFolders.show();
+			return true;
 		default:
 			return super.onContextItemSelected(item);
 		}

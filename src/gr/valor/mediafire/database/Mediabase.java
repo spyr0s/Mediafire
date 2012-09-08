@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class Mediabase extends SQLiteOpenHelper {
 	public static final String TAG = "Mediabase";
 	public static final String DATABASE = "mediafire.db";
-	public static final int VERSION = 1;
+	public static final int VERSION = 2;
 	public static final String TABLE_ITEMS = "items";
 	public static final String TABLE_FOLDERS = "folders";
 	public static final String TABLE_FILES = "files";
@@ -24,11 +24,12 @@ public class Mediabase extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		MyLog.d(TAG, "Creating table " + TABLE_ITEMS);
 		db.execSQL("CREATE TABLE `" + TABLE_ITEMS + "`" + "(`" + Columns.Items._ID
-				+ "` INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE ," + "`" + Columns.Items.KEY + "` VARCHAR NOT NULL  UNIQUE , "
-				+ "`" + Columns.Items.TYPE + "` VARCHAR, " + "`" + Columns.Items.PARENT + "` VARCHAR, " + "`" + Columns.Items.NAME
-				+ "` VARCHAR, " + "`" + Columns.Items.DESC + "` TEXT, " + "`" + Columns.Items.TAGS + "` TEXT, " + "`" + Columns.Items.FLAG
-				+ "` INTEGER, " + "`" + Columns.Items.PRIVACY + "` TEXT, `" + Columns.Items.CREATED + "` DATETIME, " + "`"
-				+ Columns.Items.INSERTED + "` INTEGER )");
+				+ "` INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL  UNIQUE ," + "`" + Columns.Items.ACCOUNT_EMAIL
+				+ "` VARCHAR NOT NULL , " + "`" + Columns.Items.KEY + "` VARCHAR NOT NULL  UNIQUE , " + "`" + Columns.Items.TYPE
+				+ "` VARCHAR, " + "`" + Columns.Items.PARENT + "` VARCHAR, " + "`" + Columns.Items.NAME + "` VARCHAR, " + "`"
+				+ Columns.Items.DESC + "` TEXT, " + "`" + Columns.Items.TAGS + "` TEXT, " + "`" + Columns.Items.FLAG + "` INTEGER, " + "`"
+				+ Columns.Items.PRIVACY + "` TEXT, `" + Columns.Items.CREATED + "` DATETIME, " + "`" + Columns.Items.INSERTED
+				+ "` INTEGER )");
 
 		MyLog.d(TAG, "Creating table " + TABLE_FOLDERS);
 		db.execSQL("CREATE TABLE `" + TABLE_FOLDERS + "` " + "(`" + Columns.Folders._ID

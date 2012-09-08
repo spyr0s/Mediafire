@@ -19,9 +19,10 @@ public interface ItemConstants {
 	String TYPE_FOLDER = "folder";
 	String TYPE_FILE = "file";
 	String TYPE_BACK = "back";
+	String TYPE_EMPTY = "empty";
 	String PRIVACY_PRIVATE = "private";
 	String PRIVACY_PUBLIC = "public";
-	String PRIVACY_INVISIBLE = "invisible";
+	String PRIVACY_INVISIBLE = "transparent";
 	String DOWNLOAD_ICON = "download_icon";
 	String SIZE_ICON = "size_icon";
 

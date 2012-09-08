@@ -12,5 +12,6 @@
     </item>
     <item android:id="@+id/menu_make_private" android:title="@string/menu_makePrivate"></item>
     <item android:id="@+id/menu_make_public" android:title="@string/menu_makePublic"></item>
+    <item android:id="@+id/menu_delete_file" android:title="@string/menu_deleteFile"></item>
 
 </menu>

@@ -102,7 +102,7 @@ public class MyOnlineFilesTask extends AsyncTask<FolderRecord, Void, FolderRecor
 		String[] types = new String[] { FOLDERS, FILES };
 		ArrayList<String> attr = new ArrayList<String>();
 		attr.add(ApiUrls.SESSION_TOKEN + "=" + mediafire.getSessionToken());
-		attr.add(FOLDER_KEY + "=" + folder.folderKey);
+		attr.add(ApiUrls.FOLDER_KEY + "=" + folder.folderKey);
 		attr.add(RESPONSE_FORMAT + "=" + JSON);
 		currentFolder = folder.name;
 		publishProgress();

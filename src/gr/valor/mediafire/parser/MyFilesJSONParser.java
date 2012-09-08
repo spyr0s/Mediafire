@@ -34,7 +34,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 			throw e;
 		}
 		folder.name = FolderItemRecord.ROOT_NAME;
-		folder.folderKey = FolderItemRecord.ROOT_KEY;
+		folder.folderKey = FolderItemRecord.getRootKey();
 		folder.parent = null;
 		folderContent = response.getJSONObject(FOLDERCONTENT);
 		if (folderContent.has(FOLDERS)) {
@@ -59,7 +59,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 				cFolder.folderCount = f.getInt(FOLDER_COUNT);
 				cFolder.folderKey = getStringValue(f, FOLDERKEY);
 				cFolder.isFolder = true;
-				cFolder.parent = getStringValue(f, PARENT_FOLDERKEY, FolderItemRecord.ROOT_KEY);
+				cFolder.parent = getStringValue(f, PARENT_FOLDERKEY, FolderItemRecord.getRootKey());
 				cFolder.privacy = getStringValue(f, PRIVACY);
 				MyLog.d("INSERT FOLDER IN ROOT", cFolder.descr());
 
@@ -82,7 +82,7 @@ public class MyFilesJSONParser extends JSONParser implements Elements {
 				file.flag = f.getInt(FLAG);
 				file.privacy = getStringValue(f, PRIVACY);
 				file.isFolder = false;
-				file.parent = FolderItemRecord.ROOT_KEY;
+				file.parent = FolderItemRecord.getRootKey();
 				file.privacy = getStringValue(f, PRIVACY);
 				file.tags = getStringValue(f, TAGS);
 				file.quickkey = getStringValue(f, QUICKKEY);

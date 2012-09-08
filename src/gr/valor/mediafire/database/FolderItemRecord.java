@@ -12,9 +12,9 @@ import android.database.sqlite.SQLiteDatabase;
 
 public abstract class FolderItemRecord implements ItemConstants {
 	public static final String ROOT_NAME = "root";
-	public static final String ROOT_KEY = "rootkey";
 
 	public int id;
+	public String account_email = Mediafire.getAccountEmail();
 	public String parent = null;
 	public boolean isFolder;
 	public String desc;
@@ -31,14 +31,18 @@ public abstract class FolderItemRecord implements ItemConstants {
 
 	protected abstract void createFromCursor(Cursor c);
 
-	protected SQLiteDatabase getDb() {
+	public static String getRootKey() {
+		return "root_key_" + Mediafire.getAccountEmail();
+	}
+
+	protected static SQLiteDatabase getDb() {
 		return Mediafire.getDb();
 	}
 
 	protected boolean isNew(String key) {
 		Cursor cur = getDb().rawQuery(
-				"SELECT " + Columns.Items.KEY + " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + "=?",
-				new String[] { key });
+				"SELECT " + Columns.Items.KEY + " FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + "=? AND "
+						+ Columns.Items.ACCOUNT_EMAIL + "=?", new String[] { key, account_email });
 		if (cur.getCount() > 0) {
 			cur.close();
 			return false;

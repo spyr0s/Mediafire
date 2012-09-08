@@ -14,14 +14,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Map;
 
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
-public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements ApiUrls {
-	public static final String TAG = "UpdateFileTask";
+public class DeleteFileTask extends AsyncTask<Void, Void, Boolean> implements ApiUrls {
+	public static final String TAG = "DeleteFileTask";
 	private FolderActivity activity;
 	private Connection connection;
 	private ArrayList<String> attributes;
@@ -29,7 +28,7 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 	private FileRecord fileRecord;
 	private int position;
 
-	public UpdateFileTask(FolderActivity activity, Connection connection, ArrayList<String> attr, FileRecord fileRecord, int position) {
+	public DeleteFileTask(FolderActivity activity, Connection connection, ArrayList<String> attr, FileRecord fileRecord, int position) {
 		this.activity = activity;
 		this.connection = connection;
 		this.attributes = attr;
@@ -41,7 +40,7 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		this.d.setMessage("Updating file...");
+		this.d.setMessage("Deleting file...");
 		this.d.show();
 	}
 
@@ -50,12 +49,11 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 		super.onPostExecute(success);
 		this.d.dismiss();
 		if (success) {
-			this.fileRecord.save();
-			Map<String, String> item = activity.folderItems.get(position);
-			fileRecord.updateAdapterItem(item);
+			this.fileRecord.delete();
+			activity.folderItems.remove(position);
 			activity.folderAdapter.notifyDataSetChanged();
 		} else {
-			Toast.makeText(activity, "Could not update the file", Toast.LENGTH_SHORT).show();
+			Toast.makeText(activity, "Could not delete the file", Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -68,11 +66,11 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 		attr.addAll(attributes);
 		InputStream in = null;
 		try {
-			in = connection.connect(DOMAIN + "/" + UPDATE_FILE_URL, attr);
+			in = connection.connect(DOMAIN + "/" + DELETE_FILE_URL, attr);
 
 			if (in == null) {
 				Toast.makeText(activity, R.string.error_cant_read, Toast.LENGTH_LONG).show();
-				MyLog.e(TAG, "Could not read from " + UPDATE_FILE_URL);
+				MyLog.e(TAG, "Could not read from " + DELETE_FILE_URL);
 			}
 
 			StringBuilder builder = new StringBuilder();
@@ -82,7 +80,7 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 				builder.append(line);
 			}
 			String response = builder.toString();
-			SimpleParser simple = new SimpleParser(response, Elements.ACTION_UPDATE_FILE);
+			SimpleParser simple = new SimpleParser(response, Elements.ACTION_DELETE_FILE);
 			if (simple.success) {
 				return true;
 			}

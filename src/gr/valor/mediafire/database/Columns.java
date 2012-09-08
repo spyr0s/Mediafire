@@ -9,6 +9,7 @@ public class Columns {
 	public static final String PRIVATE = "private";
 
 	public static final class Items implements BaseColumns {
+		public static final String ACCOUNT_EMAIL = "account_email";
 		public static final String KEY = "key";
 		public static final String TYPE = "type";
 		public static final String PARENT = "parent";

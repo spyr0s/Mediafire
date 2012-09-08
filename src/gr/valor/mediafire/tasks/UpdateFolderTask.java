@@ -4,7 +4,7 @@ import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.FolderActivity;
 import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
-import gr.valor.mediafire.database.FileRecord;
+import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.Elements;
 import gr.valor.mediafire.parser.SimpleParser;
@@ -20,28 +20,28 @@ import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
-public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements ApiUrls {
+public class UpdateFolderTask extends AsyncTask<Void, Void, Boolean> implements ApiUrls {
 	public static final String TAG = "UpdateFileTask";
 	private FolderActivity activity;
 	private Connection connection;
 	private ArrayList<String> attributes;
 	private ProgressDialog d;
-	private FileRecord fileRecord;
+	private FolderRecord folderRecord;
 	private int position;
 
-	public UpdateFileTask(FolderActivity activity, Connection connection, ArrayList<String> attr, FileRecord fileRecord, int position) {
+	public UpdateFolderTask(FolderActivity activity, Connection connection, ArrayList<String> attr, FolderRecord folderRecord, int position) {
 		this.activity = activity;
 		this.connection = connection;
 		this.attributes = attr;
 		this.d = new ProgressDialog(activity);
-		this.fileRecord = fileRecord;
+		this.folderRecord = folderRecord;
 		this.position = position - 1;
 	}
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		this.d.setMessage("Updating file...");
+		this.d.setMessage("Updating folder...");
 		this.d.show();
 	}
 
@@ -50,12 +50,12 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 		super.onPostExecute(success);
 		this.d.dismiss();
 		if (success) {
-			this.fileRecord.save();
+			this.folderRecord.save();
 			Map<String, String> item = activity.folderItems.get(position);
-			fileRecord.updateAdapterItem(item);
+			folderRecord.updateAdapterItem(item);
 			activity.folderAdapter.notifyDataSetChanged();
 		} else {
-			Toast.makeText(activity, "Could not update the file", Toast.LENGTH_SHORT).show();
+			Toast.makeText(activity, "Could not update the folder", Toast.LENGTH_SHORT).show();
 		}
 	}
 
@@ -68,11 +68,11 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 		attr.addAll(attributes);
 		InputStream in = null;
 		try {
-			in = connection.connect(DOMAIN + "/" + UPDATE_FILE_URL, attr);
+			in = connection.connect(DOMAIN + "/" + UPDATE_FOLDER_URL, attr);
 
 			if (in == null) {
 				Toast.makeText(activity, R.string.error_cant_read, Toast.LENGTH_LONG).show();
-				MyLog.e(TAG, "Could not read from " + UPDATE_FILE_URL);
+				MyLog.e(TAG, "Could not read from " + UPDATE_FOLDER_URL);
 			}
 
 			StringBuilder builder = new StringBuilder();
@@ -82,7 +82,7 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 				builder.append(line);
 			}
 			String response = builder.toString();
-			SimpleParser simple = new SimpleParser(response, Elements.ACTION_UPDATE_FILE);
+			SimpleParser simple = new SimpleParser(response, Elements.ACTION_UPDATE_FOLDER);
 			if (simple.success) {
 				return true;
 			}

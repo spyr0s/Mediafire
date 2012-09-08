@@ -1,13 +1,11 @@
 package gr.valor.mediafire.tasks;
 
-import gr.valor.mediafire.Mediafire;
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.LoginActivity;
-import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.helpers.Helper;
 import gr.valor.mediafire.helpers.MyLog;
-import gr.valor.mediafire.parser.SessionToken;
+import gr.valor.mediafire.parser.SessionTokenParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,49 +14,38 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.widget.Toast;
 
-public class LoginTask extends AsyncTask<String, Void, String> implements ApiUrls {
+public class LoginTask extends MediafireTask<String, Void, String> {
 	private static final String TAG = "Session";
 	public static final String PREF_NAME = "sessionToken";
 	private String email;
 	private String password;
-	private LoginActivity activity;
-	private Connection connection;
 	private String token;
-	private ProgressDialog d;
-	private Mediafire mediafire;
 
 	public LoginTask(String email, String password, LoginActivity activity, Connection connection) {
 		this.email = email;
 		this.password = password;
-		this.activity = activity;
+		this.activity = (LoginActivity) activity;
+		this.mediafire = ((LoginActivity) activity).mediafire;
 		this.connection = connection;
 		this.d = new ProgressDialog(activity);
 	}
 
 	@Override
-	protected void onPreExecute() {
-		super.onPreExecute();
-		this.d.setMessage("Authenticating...");
-		this.d.show();
-	}
-
-	@Override
 	protected void onPostExecute(String result) {
-		this.d.dismiss();
+
 		super.onPostExecute(result);
 		if (result == null || result.equals("null")) {
 			MyLog.d(TAG, "Wrong credentials");
 			Toast.makeText(this.activity, "Wrong username or password", Toast.LENGTH_LONG).show();
 		} else {
 			MyLog.d(TAG, "Setting credentials");
-			activity.mediafire.setSessionToken(result);
-			activity.mediafire.setSessionTokenCreationTime(System.currentTimeMillis() / 1000);
+			mediafire.setSessionToken(result);
+			mediafire.setSessionTokenCreationTime(System.currentTimeMillis() / 1000);
 			MyLog.d(TAG, "Saving credentials and showing folders");
-			activity.mediafire.saveCredentials();
-			activity.showFolders();
+			mediafire.saveCredentials();
+			((LoginActivity) activity).showFolders();
 
 		}
 
@@ -89,14 +76,17 @@ public class LoginTask extends AsyncTask<String, Void, String> implements ApiUrl
 				builder.append(line);
 			}
 			String response = builder.toString();
-			SessionToken s = new SessionToken(response, false);
+			SessionTokenParser s = new SessionTokenParser(response, false);
 			return s.sessionToken;
 		} catch (IOException e) {
 			MyLog.d(TAG, "I/O Exception");
+			notConnected = true;
 			e.printStackTrace();
 		} finally {
 			try {
-				in.close();
+				if (in != null) {
+					in.close();
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

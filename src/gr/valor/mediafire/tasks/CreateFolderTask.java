@@ -2,65 +2,59 @@ package gr.valor.mediafire.tasks;
 
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.FolderActivity;
-import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
-import gr.valor.mediafire.database.FileRecord;
+import gr.valor.mediafire.database.FolderItemRecord;
+import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.helpers.MyLog;
-import gr.valor.mediafire.parser.Elements;
-import gr.valor.mediafire.parser.SimpleParser;
+import gr.valor.mediafire.parser.CreateFolderParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Map;
 
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.widget.Toast;
 
-public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements ApiUrls {
-	public static final String TAG = "UpdateFileTask";
-	private FolderActivity activity;
-	private Connection connection;
-	private ArrayList<String> attributes;
-	private ProgressDialog d;
-	private FileRecord fileRecord;
-	private int position;
+public class CreateFolderTask extends MediafireTask<Void, Void, String> {
 
-	public UpdateFileTask(FolderActivity activity, Connection connection, ArrayList<String> attr, FileRecord fileRecord, int position) {
+	private static final String TAG = "CreateFolderTask";
+	private FolderActivity activity;
+
+	public CreateFolderTask(FolderActivity activity, Connection connection, ArrayList<String> attr) {
 		this.activity = activity;
 		this.connection = connection;
 		this.attributes = attr;
 		this.d = new ProgressDialog(activity);
-		this.fileRecord = fileRecord;
-		this.position = position - 1;
 	}
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		this.d.setMessage("Updating file...");
+		this.d.setMessage("Creating folder...");
 		this.d.show();
 	}
 
 	@Override
-	protected void onPostExecute(Boolean success) {
-		super.onPostExecute(success);
+	protected void onPostExecute(String folderKey) {
+		super.onPostExecute(folderKey);
 		this.d.dismiss();
-		if (success) {
-			this.fileRecord.save();
-			Map<String, String> item = activity.folderItems.get(position);
-			fileRecord.updateAdapterItem(item);
+		if (folderKey != null) {
+			FolderRecord folderRecord = new FolderRecord();
+			folderRecord.folderKey = folderKey;
+			folderRecord.itemType = FolderItemRecord.TYPE_FOLDER;
+			folderRecord.name = attributes.get(1);
+			folderRecord.parent = attributes.get(0);
+			folderRecord.save();
 			activity.folderAdapter.notifyDataSetChanged();
 		} else {
-			Toast.makeText(activity, "Could not update the file", Toast.LENGTH_SHORT).show();
+			Toast.makeText(activity, "Could not create the folder", Toast.LENGTH_SHORT).show();
 		}
 	}
 
 	@Override
-	protected Boolean doInBackground(Void... params) {
+	protected String doInBackground(Void... params) {
 		MyLog.d(TAG, "Connecting...");
 		ArrayList<String> attr = new ArrayList<String>();
 		attr.add(SESSION_TOKEN + "=" + activity.mediafire.getSessionToken());
@@ -68,11 +62,11 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 		attr.addAll(attributes);
 		InputStream in = null;
 		try {
-			in = connection.connect(DOMAIN + "/" + UPDATE_FILE_URL, attr);
+			in = connection.connect(DOMAIN + "/" + CREATE_FOLDER_URL, attr);
 
 			if (in == null) {
 				Toast.makeText(activity, R.string.error_cant_read, Toast.LENGTH_LONG).show();
-				MyLog.e(TAG, "Could not read from " + UPDATE_FILE_URL);
+				MyLog.e(TAG, "Could not read from " + CREATE_FOLDER_URL);
 			}
 
 			StringBuilder builder = new StringBuilder();
@@ -82,10 +76,8 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 				builder.append(line);
 			}
 			String response = builder.toString();
-			SimpleParser simple = new SimpleParser(response, Elements.ACTION_UPDATE_FILE);
-			if (simple.success) {
-				return true;
-			}
+			CreateFolderParser c = new CreateFolderParser(response);
+			return c.folderKey;
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -101,6 +93,7 @@ public class UpdateFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 				e.printStackTrace();
 			}
 		}
-		return false;
+		return null;
 	}
+
 }

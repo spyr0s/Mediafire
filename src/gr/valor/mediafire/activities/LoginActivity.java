@@ -96,6 +96,10 @@ public class LoginActivity extends BaseActivity {
 	}
 
 	private void login() {
+		if (!mediafire.isOnline()) {
+			Toast.makeText(this, "There is no Internet connection", Toast.LENGTH_SHORT).show();
+			return;
+		}
 		String email = mediafire.getEmail();
 		String password = mediafire.getPassword();
 		Connection connection = new Connection(this);

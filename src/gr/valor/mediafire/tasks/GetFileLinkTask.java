@@ -7,7 +7,7 @@ import gr.valor.mediafire.activities.ViewFileActivity;
 import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.helpers.MyLog;
-import gr.valor.mediafire.parser.GetFileLink;
+import gr.valor.mediafire.parser.GetFileLinkParser;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -139,7 +139,7 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 				builder.append(line);
 			}
 			String response = builder.toString();
-			GetFileLink d = new GetFileLink(response, quickKey);
+			GetFileLinkParser d = new GetFileLinkParser(response, quickKey);
 			return d.url;
 
 		} catch (IOException e) {

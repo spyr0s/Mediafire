@@ -28,6 +28,9 @@ public class FolderViewBinder implements SimpleAdapter.ViewBinder {
 			if (textRepresentation.equals(FolderItemRecord.TYPE_FOLDER) || textRepresentation.equals(FolderItemRecord.TYPE_BACK)) {
 				d = res.getDrawable(R.drawable.icon_folder);
 				im.setImageDrawable(d);
+			} else if (textRepresentation.equals(FolderItemRecord.TYPE_EMPTY)) {
+				d = res.getDrawable(R.drawable.transparent);
+				im.setImageDrawable(d);
 			} else if (textRepresentation.equals(FolderItemRecord.TYPE_FILE)) {
 				d = res.getDrawable(R.drawable.icon_file);
 				im.setImageDrawable(d);
