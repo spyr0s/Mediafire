@@ -11,5 +11,6 @@
     <string name="menu_makePrivate">Make Private</string>
     <string name="menu_makePublic">Make Public</string>
     <string name="menu_deleteFile">Delete</string>
+    <string name="menu_deleteFolder">Delete</string>
 
 </resources>

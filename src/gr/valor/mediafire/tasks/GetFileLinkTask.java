@@ -1,10 +1,8 @@
 package gr.valor.mediafire.tasks;
 
-import gr.valor.mediafire.Mediafire;
 import gr.valor.mediafire.PrefConstants;
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.ViewFileActivity;
-import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.GetFileLinkParser;
@@ -20,34 +18,24 @@ import android.app.AlertDialog;
 import android.app.DownloadManager;
 import android.app.DownloadManager.Request;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class GetFileLinkTask extends AsyncTask<String, Void, String> implements ApiUrls {
+public class GetFileLinkTask extends MediafireTask<String, Void, String> {
 
 	public static final String TAG = "DownloadTask";
 	private ViewFileActivity activity;
-	private Connection connection;
-	private Mediafire mediafire;
-	private ProgressDialog d;
 	private String saveFilename;
-	private int answer;
 
 	public GetFileLinkTask(ViewFileActivity viewFileActivity, Connection connection) {
 		this.activity = viewFileActivity;
 		this.connection = connection;
 		this.mediafire = activity.mediafire;
+		this.message = "Getting download link...";
 		this.d = new ProgressDialog(activity);
-	}
-
-	@Override
-	protected void onPreExecute() {
-		super.onPreExecute();
-		this.d.setMessage("Geting link...");
-		this.d.show();
 	}
 
 	@Override
@@ -55,10 +43,9 @@ public class GetFileLinkTask extends AsyncTask<String, Void, String> implements 
 		super.onPostExecute(url);
 		this.d.dismiss();
 		if (url != null) {
-			answer = -1;
 			MyLog.d(TAG, "Saving link: " + url);
 			mediafire.setPref(PrefConstants.FILE_PREF_DOWNLOAD_LINKS, PrefConstants.PREF_TYPE_STRING, activity.fileRecord.quickkey, url);
-			activity.dm = (DownloadManager) activity.getSystemService(activity.DOWNLOAD_SERVICE);
+			activity.dm = (DownloadManager) activity.getSystemService(Context.DOWNLOAD_SERVICE);
 			final String orFilename = activity.fileRecord.filename;
 			saveFilename = activity.fileRecord.filename;
 			final String path = mediafire.getDownloadPath();

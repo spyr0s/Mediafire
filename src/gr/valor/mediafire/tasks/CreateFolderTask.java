@@ -5,6 +5,7 @@ import gr.valor.mediafire.activities.FolderActivity;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.database.FolderItemRecord;
 import gr.valor.mediafire.database.FolderRecord;
+import gr.valor.mediafire.helpers.Helper;
 import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.CreateFolderParser;
 
@@ -26,14 +27,8 @@ public class CreateFolderTask extends MediafireTask<Void, Void, String> {
 		this.activity = activity;
 		this.connection = connection;
 		this.attributes = attr;
+		this.message = "Creating folder...";
 		this.d = new ProgressDialog(activity);
-	}
-
-	@Override
-	protected void onPreExecute() {
-		super.onPreExecute();
-		this.d.setMessage("Creating folder...");
-		this.d.show();
 	}
 
 	@Override
@@ -44,9 +39,10 @@ public class CreateFolderTask extends MediafireTask<Void, Void, String> {
 			FolderRecord folderRecord = new FolderRecord();
 			folderRecord.folderKey = folderKey;
 			folderRecord.itemType = FolderItemRecord.TYPE_FOLDER;
-			folderRecord.name = attributes.get(1);
-			folderRecord.parent = attributes.get(0);
+			folderRecord.name = Helper.getAttributeValue(attributes.get(1));
+			folderRecord.parent = Helper.getAttributeValue(attributes.get(0));
 			folderRecord.save();
+			activity.folderItems.add(folderRecord.getMapItem());
 			activity.folderAdapter.notifyDataSetChanged();
 		} else {
 			Toast.makeText(activity, "Could not create the folder", Toast.LENGTH_SHORT).show();

@@ -21,11 +21,12 @@ public abstract class MediafireTask<Params, Progress, Result> extends AsyncTask<
 	protected boolean notConnected;
 	protected Activity activity;
 	protected Mediafire mediafire;
+	protected String message = "";
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		this.d.setMessage("Authenticating...");
+		this.d.setMessage(message);
 		this.d.show();
 	}
 

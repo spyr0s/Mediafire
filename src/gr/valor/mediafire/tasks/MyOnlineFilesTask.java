@@ -17,11 +17,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import android.app.ProgressDialog;
-import android.database.sqlite.SQLiteDatabase;
-import android.os.AsyncTask;
 import android.widget.Toast;
 
-public class MyOnlineFilesTask extends AsyncTask<FolderRecord, Void, FolderRecord> implements ApiUrls, Elements {
+public class MyOnlineFilesTask extends MediafireTask<FolderRecord, Void, FolderRecord> implements Elements {
 	public static final String TAG = "MyOnlineFiles";
 	public String content_filter;
 	public static final String ALL = "all";
@@ -40,24 +38,22 @@ public class MyOnlineFilesTask extends AsyncTask<FolderRecord, Void, FolderRecor
 
 	protected FolderActivity activity;
 	protected Connection connection;
-	private SQLiteDatabase db;
-	private ProgressDialog dialog;
-	private Mediafire mediafire;
 	private String currentFolder;
 
 	public MyOnlineFilesTask(FolderActivity activity, Connection connection) {
 		this.connection = connection;
-		this.activity = activity;
-		this.dialog = new ProgressDialog(activity);
+		this.activity = (FolderActivity) activity;
+		this.mediafire = activity.mediafire;
+		this.d = new ProgressDialog(activity);
 		mediafire = (Mediafire) activity.getApplication();
 	}
 
 	@Override
 	protected void onPreExecute() {
 		super.onPreExecute();
-		this.dialog.setMessage("Fetching " + mediafire.getCurrentFolder().name + "...");
-		if (!this.dialog.isShowing() && !mediafire.isForceOnline()) {
-			this.dialog.show();
+		this.d.setMessage("Fetching " + mediafire.getCurrentFolder().name + "...");
+		if (!this.d.isShowing() && !mediafire.isForceOnline()) {
+			this.d.show();
 		}
 	}
 
@@ -77,8 +73,8 @@ public class MyOnlineFilesTask extends AsyncTask<FolderRecord, Void, FolderRecor
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			if (this.dialog.isShowing()) {
-				this.dialog.dismiss();
+			if (this.d.isShowing()) {
+				this.d.dismiss();
 			}
 		}
 
@@ -93,8 +89,8 @@ public class MyOnlineFilesTask extends AsyncTask<FolderRecord, Void, FolderRecor
 	@Override
 	protected void onProgressUpdate(Void... values) {
 		super.onProgressUpdate(values);
-		if (!this.dialog.isShowing() && !mediafire.isForceOnline()) {
-			this.dialog.setMessage("Fetching " + this.currentFolder + "...");
+		if (!this.d.isShowing() && !mediafire.isForceOnline()) {
+			this.d.setMessage("Fetching " + this.currentFolder + "...");
 		}
 	}
 

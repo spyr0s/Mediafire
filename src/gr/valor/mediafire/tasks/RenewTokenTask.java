@@ -2,8 +2,6 @@ package gr.valor.mediafire.tasks;
 
 import gr.valor.mediafire.Mediafire;
 import gr.valor.mediafire.R;
-import gr.valor.mediafire.activities.LoginActivity;
-import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.parser.SessionTokenParser;
@@ -14,20 +12,22 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import android.os.AsyncTask;
 import android.widget.Toast;
 
-public class RenewTokenTask extends AsyncTask<String, Void, String> implements ApiUrls {
+public class RenewTokenTask extends MediafireTask<String, Void, String> {
 	private static final String TAG = "Session";
 	public static final String PREF_NAME = "sessionToken";
-	private LoginActivity activity;
-	private Connection connection;
 	private String token;
-	private Mediafire mediafire;
 
 	public RenewTokenTask(Mediafire mediafire, Connection connection) {
 		this.mediafire = mediafire;
 		this.connection = connection;
+	}
+
+	@Override
+	protected void onPreExecute() {
+		super.onPreExecute();
+		this.d.dismiss();
 	}
 
 	@Override

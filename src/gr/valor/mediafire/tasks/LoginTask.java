@@ -28,6 +28,7 @@ public class LoginTask extends MediafireTask<String, Void, String> {
 		this.password = password;
 		this.activity = (LoginActivity) activity;
 		this.mediafire = ((LoginActivity) activity).mediafire;
+		this.message = "Authenticating...";
 		this.connection = connection;
 		this.d = new ProgressDialog(activity);
 	}

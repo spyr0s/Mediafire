@@ -16,6 +16,7 @@ public interface ApiUrls {
 	String UPDATE_FOLDER_URL = "folder/update.php";
 	String DELETE_FILE_URL = "file/delete.php";
 	String CREATE_FOLDER_URL = "folder/create.php";
+	String DELETE_FOLDER_URL = "folder/delete.php";
 
 	// PARAMETERS
 	String SESSION_TOKEN = "session_token";

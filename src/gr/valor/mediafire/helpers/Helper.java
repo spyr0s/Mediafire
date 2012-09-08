@@ -101,4 +101,21 @@ public class Helper {
 		return -1;
 	}
 
+	/**
+	 * Gets the attribute part of the Attributes ArrayList The attr is in form
+	 * key=value
+	 * 
+	 * @param string
+	 *            The attribute
+	 * @return the value
+	 */
+	public static String getAttributeValue(String string) {
+		String[] split = string.split("=");
+		if (split.length == 2) {
+			return split[1];
+		} else {
+			return "";
+		}
+	}
+
 }

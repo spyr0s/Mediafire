@@ -17,6 +17,7 @@ import gr.valor.mediafire.listeners.FolderItemsLongClickListener;
 import gr.valor.mediafire.listeners.FolderRefreshListener;
 import gr.valor.mediafire.tasks.CreateFolderTask;
 import gr.valor.mediafire.tasks.DeleteFileTask;
+import gr.valor.mediafire.tasks.DeleteFolderTask;
 import gr.valor.mediafire.tasks.MyOnlineFilesTask;
 import gr.valor.mediafire.tasks.UpdateFileTask;
 import gr.valor.mediafire.tasks.UpdateFolderTask;
@@ -253,9 +254,11 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 					menu.removeItem(R.id.menu_make_public);
 					menu.removeItem(R.id.menu_make_private);
 					menu.removeItem(R.id.menu_viewFile);
+					menu.removeItem(R.id.menu_deleteFolder);
 
 				} else if (fi.get(FolderItemRecord.TYPE).equals(FolderItemRecord.TYPE_EMPTY)) {
 					menu.setHeaderTitle("Actions");
+					menu.removeItem(R.id.menu_delete_file);
 					menu.removeItem(R.id.menu_delete_file);
 					menu.removeItem(R.id.menu_make_public);
 					menu.removeItem(R.id.menu_make_private);
@@ -278,8 +281,9 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 		}
 		Map<String, String> select = null;
 		FileRecord f = null;
-		FolderRecord folder;
+		FolderRecord folder = null;
 		String quickkey = null;
+		String folderkey = null;
 		final Connection connection = new Connection(this);
 		ArrayList<String> attr = new ArrayList<String>();
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
@@ -339,13 +343,13 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			final DeleteFileTask update = new DeleteFileTask(this, connection, attr, f, info.position);
+			final DeleteFileTask deleteFile = new DeleteFileTask(this, connection, attr, f, info.position);
 			AlertDialog.Builder alert = new AlertDialog.Builder(this);
 			alert.setTitle("Delete file");
 			alert.setMessage("Do you really want to delete \"" + f.filename + "\"");
 			alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int whichButton) {
-					update.execute();
+					deleteFile.execute();
 				}
 			});
 
@@ -356,6 +360,35 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 			});
 
 			alert.show();
+			return true;
+			// DELETE FOLDER
+		case R.id.menu_deleteFolder:
+			attr = new ArrayList<String>();
+			folderkey = select.get(FolderItemRecord.FOLDERKEY);
+			attr.add(ApiUrls.FOLDER_KEY + "=" + folderkey);
+			try {
+				folder = new FolderRecord(folderkey);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			final DeleteFolderTask deleteFolder = new DeleteFolderTask(this, connection, attr, folder, info.position);
+			AlertDialog.Builder alertDFolder = new AlertDialog.Builder(this);
+			alertDFolder.setTitle("Delete file");
+			alertDFolder.setMessage("Do you really want to delete \"" + folder.name + "\"");
+			alertDFolder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+					deleteFolder.execute();
+				}
+			});
+
+			alertDFolder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					return;
+				}
+			});
+
+			alertDFolder.show();
 			return true;
 			// CREATE FOLDER
 		case R.id.menu_createFolder:

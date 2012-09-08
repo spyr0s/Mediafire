@@ -306,4 +306,23 @@ public class FolderRecord extends FolderItemRecord {
 		return f;
 	}
 
+	public Map<String, String> getMapItem() {
+		Map<String, String> map = new HashMap<String, String>();
+		map.put(TYPE, this.itemType);
+		map.put(ICON, TYPE_FOLDER);
+		map.put(FOLDERKEY, this.folderKey);
+		map.put(NAME, this.name);
+		map.put(CREATED, this.getCreated());
+		map.put(PRIVACY, this.privacy);
+		map.put(DOWNLOAD_ICON, NO);
+		map.put(SIZE_ICON, NO);
+		return map;
+	}
+
+	public void delete() {
+		getDb().execSQL("DELETE FROM " + Mediabase.TABLE_ITEMS + " WHERE " + Columns.Items.KEY + " = ?", new String[] { this.folderKey });
+		getDb().execSQL("DELETE FROM " + Mediabase.TABLE_FILES + " WHERE " + Columns.Files.QUICKKEY + " = ?",
+				new String[] { this.folderKey });
+	}
+
 }

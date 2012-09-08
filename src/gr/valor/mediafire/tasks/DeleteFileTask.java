@@ -2,7 +2,6 @@ package gr.valor.mediafire.tasks;
 
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.FolderActivity;
-import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.database.FileRecord;
 import gr.valor.mediafire.helpers.MyLog;
@@ -16,15 +15,10 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.widget.Toast;
 
-public class DeleteFileTask extends AsyncTask<Void, Void, Boolean> implements ApiUrls {
+public class DeleteFileTask extends MediafireTask<Void, Void, Boolean> {
 	public static final String TAG = "DeleteFileTask";
-	private FolderActivity activity;
-	private Connection connection;
-	private ArrayList<String> attributes;
-	private ProgressDialog d;
 	private FileRecord fileRecord;
 	private int position;
 
@@ -32,16 +26,11 @@ public class DeleteFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 		this.activity = activity;
 		this.connection = connection;
 		this.attributes = attr;
+		this.message = "Deleting file...";
 		this.d = new ProgressDialog(activity);
+		this.mediafire = activity.mediafire;
 		this.fileRecord = fileRecord;
 		this.position = position - 1;
-	}
-
-	@Override
-	protected void onPreExecute() {
-		super.onPreExecute();
-		this.d.setMessage("Deleting file...");
-		this.d.show();
 	}
 
 	@Override
@@ -50,8 +39,8 @@ public class DeleteFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 		this.d.dismiss();
 		if (success) {
 			this.fileRecord.delete();
-			activity.folderItems.remove(position);
-			activity.folderAdapter.notifyDataSetChanged();
+			((FolderActivity) activity).folderItems.remove(position);
+			((FolderActivity) activity).folderAdapter.notifyDataSetChanged();
 		} else {
 			Toast.makeText(activity, "Could not delete the file", Toast.LENGTH_SHORT).show();
 		}
@@ -61,7 +50,7 @@ public class DeleteFileTask extends AsyncTask<Void, Void, Boolean> implements Ap
 	protected Boolean doInBackground(Void... params) {
 		MyLog.d(TAG, "Connecting...");
 		ArrayList<String> attr = new ArrayList<String>();
-		attr.add(SESSION_TOKEN + "=" + activity.mediafire.getSessionToken());
+		attr.add(SESSION_TOKEN + "=" + mediafire.getSessionToken());
 		attr.add(RESPONSE_FORMAT + "=" + JSON);
 		attr.addAll(attributes);
 		InputStream in = null;

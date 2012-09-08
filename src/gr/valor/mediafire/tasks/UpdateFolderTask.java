@@ -2,7 +2,6 @@ package gr.valor.mediafire.tasks;
 
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.activities.FolderActivity;
-import gr.valor.mediafire.api.ApiUrls;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.database.FolderRecord;
 import gr.valor.mediafire.helpers.MyLog;
@@ -17,32 +16,22 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import android.app.ProgressDialog;
-import android.os.AsyncTask;
 import android.widget.Toast;
 
-public class UpdateFolderTask extends AsyncTask<Void, Void, Boolean> implements ApiUrls {
+public class UpdateFolderTask extends MediafireTask<Void, Void, Boolean> {
 	public static final String TAG = "UpdateFileTask";
-	private FolderActivity activity;
-	private Connection connection;
-	private ArrayList<String> attributes;
-	private ProgressDialog d;
 	private FolderRecord folderRecord;
 	private int position;
 
 	public UpdateFolderTask(FolderActivity activity, Connection connection, ArrayList<String> attr, FolderRecord folderRecord, int position) {
-		this.activity = activity;
+		this.activity = (FolderActivity) activity;
+		this.mediafire = activity.mediafire;
 		this.connection = connection;
 		this.attributes = attr;
+		this.message = "Updating folder...";
 		this.d = new ProgressDialog(activity);
 		this.folderRecord = folderRecord;
 		this.position = position - 1;
-	}
-
-	@Override
-	protected void onPreExecute() {
-		super.onPreExecute();
-		this.d.setMessage("Updating folder...");
-		this.d.show();
 	}
 
 	@Override
@@ -51,9 +40,9 @@ public class UpdateFolderTask extends AsyncTask<Void, Void, Boolean> implements 
 		this.d.dismiss();
 		if (success) {
 			this.folderRecord.save();
-			Map<String, String> item = activity.folderItems.get(position);
+			Map<String, String> item = ((FolderActivity) activity).folderItems.get(position);
 			folderRecord.updateAdapterItem(item);
-			activity.folderAdapter.notifyDataSetChanged();
+			((FolderActivity) activity).folderAdapter.notifyDataSetChanged();
 		} else {
 			Toast.makeText(activity, "Could not update the folder", Toast.LENGTH_SHORT).show();
 		}
@@ -63,7 +52,7 @@ public class UpdateFolderTask extends AsyncTask<Void, Void, Boolean> implements 
 	protected Boolean doInBackground(Void... params) {
 		MyLog.d(TAG, "Connecting...");
 		ArrayList<String> attr = new ArrayList<String>();
-		attr.add(SESSION_TOKEN + "=" + activity.mediafire.getSessionToken());
+		attr.add(SESSION_TOKEN + "=" + mediafire.getSessionToken());
 		attr.add(RESPONSE_FORMAT + "=" + JSON);
 		attr.addAll(attributes);
 		InputStream in = null;

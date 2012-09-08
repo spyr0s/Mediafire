@@ -13,6 +13,7 @@ public interface Elements {
 	String ACTION_UPDATE_FOLDER = "folder/update";
 	String ACTION_DELETE_FILE = "file/delete";
 	String ACTION_CREATE_FOLDER = "folder/create";
+	String ACTION_DELETE_FOLDER = "folder/delete";
 
 	String SUCCESS = "Success";
 	String RESULT = "result";
