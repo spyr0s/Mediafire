@@ -22,7 +22,7 @@ public abstract class FolderItemRecord implements ItemConstants {
 	private String created;
 	public long inserted = 0L;
 	public int flag;
-	public String privacy;
+	public String privacy = PRIVACY_PUBLIC;
 	public String itemType;
 	public ArrayList<FolderRecord> subFolders = new ArrayList<FolderRecord>();
 	public ArrayList<FileRecord> files = new ArrayList<FileRecord>();

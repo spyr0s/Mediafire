@@ -7,13 +7,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 public class Helper {
-
 	public static final String TAG = "Helper";
+	public static final String INPUT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
 	public static String implode(String[] array, String glue) {
 		String str = "";
@@ -99,6 +102,20 @@ public class Helper {
 			}
 		}
 		return -1;
+	}
+
+	public static String formatDate(String date) {
+		SimpleDateFormat input = new SimpleDateFormat(INPUT_DATE_FORMAT);
+		SimpleDateFormat output = new SimpleDateFormat("dd/MM/yyyy HH::mm:ss");
+		Date d;
+		try {
+			d = input.parse(date);
+			return output.format(d);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return "";
+		}
+
 	}
 
 	/**

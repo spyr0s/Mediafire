@@ -39,8 +39,7 @@ public class DeleteFileTask extends MediafireTask<Void, Void, Boolean> {
 		this.d.dismiss();
 		if (success) {
 			this.fileRecord.delete();
-			((FolderActivity) activity).folderItems.remove(position);
-			((FolderActivity) activity).folderAdapter.notifyDataSetChanged();
+			((FolderActivity) activity).requestFolder();
 		} else {
 			Toast.makeText(activity, "Could not delete the file", Toast.LENGTH_SHORT).show();
 		}

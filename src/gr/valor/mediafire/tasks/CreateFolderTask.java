@@ -14,8 +14,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Date;
 
 import android.app.ProgressDialog;
+import android.text.format.DateFormat;
 import android.widget.Toast;
 
 public class CreateFolderTask extends MediafireTask<Void, Void, String> {
@@ -38,12 +40,15 @@ public class CreateFolderTask extends MediafireTask<Void, Void, String> {
 		if (folderKey != null) {
 			FolderRecord folderRecord = new FolderRecord();
 			folderRecord.folderKey = folderKey;
+			folderRecord.privacy = FolderItemRecord.PRIVACY_PUBLIC;
 			folderRecord.itemType = FolderItemRecord.TYPE_FOLDER;
 			folderRecord.name = Helper.getAttributeValue(attributes.get(1));
 			folderRecord.parent = Helper.getAttributeValue(attributes.get(0));
+			Date d = new Date();
+			String s = (String) DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
+			folderRecord.setCreated(s);
 			folderRecord.save();
-			activity.folderItems.add(folderRecord.getMapItem());
-			activity.folderAdapter.notifyDataSetChanged();
+			activity.requestFolder();
 		} else {
 			Toast.makeText(activity, "Could not create the folder", Toast.LENGTH_SHORT).show();
 		}

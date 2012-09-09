@@ -40,8 +40,7 @@ public class DeleteFolderTask extends MediafireTask<Void, Void, Boolean> {
 		this.d.dismiss();
 		if (success) {
 			this.folderRecord.delete();
-			((FolderActivity) activity).folderItems.remove(position);
-			((FolderActivity) activity).folderAdapter.notifyDataSetChanged();
+			((FolderActivity) activity).requestFolder();
 		} else {
 			Toast.makeText(activity, "Could not delete the folder", Toast.LENGTH_SHORT).show();
 		}

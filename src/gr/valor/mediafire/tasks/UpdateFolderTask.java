@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Map;
 
 import android.app.ProgressDialog;
 import android.widget.Toast;
@@ -40,9 +39,7 @@ public class UpdateFolderTask extends MediafireTask<Void, Void, Boolean> {
 		this.d.dismiss();
 		if (success) {
 			this.folderRecord.save();
-			Map<String, String> item = ((FolderActivity) activity).folderItems.get(position);
-			folderRecord.updateAdapterItem(item);
-			((FolderActivity) activity).folderAdapter.notifyDataSetChanged();
+			((FolderActivity) activity).requestFolder();
 		} else {
 			Toast.makeText(activity, "Could not update the folder", Toast.LENGTH_SHORT).show();
 		}
