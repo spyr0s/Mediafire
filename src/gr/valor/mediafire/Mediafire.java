@@ -7,7 +7,14 @@ import gr.valor.mediafire.helpers.MyLog;
 import gr.valor.mediafire.tasks.RenewTokenTask;
 
 import java.io.File;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
+import org.json.JSONObject;
 
 import android.app.Application;
 import android.content.SharedPreferences;
@@ -16,14 +23,16 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 public class Mediafire extends Application implements PrefConstants {
 	public static final String TAG = "Mediafire";
 
 	public static final int TOKEN_LIFETIME = 600;
 	public static final int TOKEN_RENEW_TIME = 400;
 	public static final String CLOSE_APP = "closeApplication";
-	private boolean isLoggedIn = false;
-	private String email = null;
+	private boolean autoLogin = true;
 	private String password = null;
 	private boolean rememberMe = false;
 	private String sessionToken = null;
@@ -41,14 +50,15 @@ public class Mediafire extends Application implements PrefConstants {
 	private boolean forceOnline;
 	private static Mediabase mediabase = null;
 	private static SQLiteDatabase database;
-
-	private static String accountEmail;
+	private static String accountEmail = null;
+	private ArrayList<Credential> credentials;
 
 	private String downloadPath;
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		credentials = new ArrayList<Credential>();
 		setEmail((String) getPref(PREF_TYPE_STRING, PREF_KEY_EMAIL, null));
 		setPassword((String) getPref(PREF_TYPE_STRING, PREF_KEY_PASSWORD, null));
 		mediabase = new Mediabase(getApplicationContext());
@@ -65,12 +75,46 @@ public class Mediafire extends Application implements PrefConstants {
 		return database;
 	}
 
+	public ArrayList<Credential> getCredentials() {
+		if (credentials.isEmpty()) {
+			Gson gson = new Gson();
+			String s = (String) getPref(PREF_TYPE_STRING, PREF_KEY_CREDENTIALS, "");
+			Type Credential = new TypeToken<Collection<Credential>>() {
+			}.getType();
+			ArrayList<Credential> c = gson.fromJson(s, Credential);
+			if (c != null) {
+				credentials = c;
+			}
+		}
+		return credentials;
+	}
+
+	public void addAccount() {
+		Credential cr = new Credential(getEmail());
+		cr.setPassword(getPassword());
+		if (!credentials.contains(cr)) {
+			credentials.add(cr);
+			Gson gson = new Gson();
+			String s = gson.toJson(credentials);
+			setPref(PREF_TYPE_STRING, PREF_KEY_CREDENTIALS, s);
+		}
+	}
+
+	public void removeAccount() {
+		for (Credential cr : credentials) {
+			if (cr.getUsername().equals(getAccountEmail())) {
+				credentials.remove(cr);
+			}
+		}
+		Gson gson = new Gson();
+		String s = gson.toJson(credentials);
+		setPref(PREF_TYPE_STRING, PREF_KEY_CREDENTIALS, s);
+	}
+
 	public void saveCredentials() {
 		if (rememberMe) {
 			MyLog.d(TAG, "Saving credentials");
-			setPref(PREF_TYPE_STRING, PREF_KEY_EMAIL, getEmail());
-			setPref(PREF_TYPE_STRING, PREF_KEY_PASSWORD, getPassword());
-
+			addAccount();
 		}
 	}
 
@@ -165,7 +209,7 @@ public class Mediafire extends Application implements PrefConstants {
 	}
 
 	public boolean hasSavedCredentials() {
-		return email != null && password != null && !email.equals("null") && !password.equals("null");
+		return accountEmail != null && password != null && !accountEmail.equals("null") && !password.equals("null");
 	}
 
 	public long getSessionTokenCreationTime() {
@@ -180,12 +224,12 @@ public class Mediafire extends Application implements PrefConstants {
 		setPref(PREF_TYPE_LONG, PREF_KEY_SESSION_TOKEN_TIME, sessionTokenCreationTime);
 	}
 
-	public boolean isLoggedIn() throws Exception {
-		return isTokenValid();
+	public boolean isAutoLogin() {
+		return this.autoLogin;
 	}
 
-	public void setLoggedIn(boolean isLoggedIn) {
-		this.isLoggedIn = isLoggedIn;
+	public void setAutoLogin(boolean autoLogin) {
+		this.autoLogin = autoLogin;
 	}
 
 	public FolderRecord getCurrentFolder() {
@@ -275,11 +319,10 @@ public class Mediafire extends Application implements PrefConstants {
 	}
 
 	public String getEmail() {
-		return email;
+		return Mediafire.accountEmail;
 	}
 
 	public void setEmail(String email) {
-		this.email = email;
 		Mediafire.accountEmail = email;
 	}
 
@@ -403,6 +446,55 @@ public class Mediafire extends Application implements PrefConstants {
 
 	public static String getAccountEmail() {
 		return Mediafire.accountEmail;
+	}
+
+	public class Credential implements Comparable<Credential> {
+		private String username = null;
+		private String password = null;
+
+		public Credential(String username) {
+			this.username = username;
+		}
+
+		public String getUsername() {
+			return username;
+		}
+
+		public void setUsername(String username) {
+			this.username = username;
+		}
+
+		public String getPassword() {
+			return password;
+		}
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+
+		public String getAsJson() {
+			Map<String, String> m = new HashMap<String, String>();
+			m.put("username", username);
+			m.put("password", password);
+			JSONObject j = new JSONObject(m);
+			return j.toString();
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o instanceof Credential) {
+				Credential other = (Credential) o;
+				return getUsername().equals(other.getUsername());
+			}
+			return false;
+		}
+
+		@Override
+		public int compareTo(Credential another) {
+			return this.getUsername().compareTo(another.getUsername());
+
+		}
+
 	}
 
 }

@@ -66,6 +66,7 @@ public class FolderActivity extends BaseActivity implements SwipeInterface {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mediafire.setAutoLogin(true);
 		setContentView(R.layout.activity_folder);
 		// Gesture detection
 		ActivitySwipeDetector activitySwipeDetector = new ActivitySwipeDetector(this);

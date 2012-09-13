@@ -1,9 +1,14 @@
 package gr.valor.mediafire.activities;
 
+import gr.valor.mediafire.Mediafire.Credential;
 import gr.valor.mediafire.R;
 import gr.valor.mediafire.api.Connection;
 import gr.valor.mediafire.helpers.Helper;
 import gr.valor.mediafire.tasks.LoginTask;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,16 +51,21 @@ public class LoginActivity extends BaseActivity {
 	}
 
 	private void checkCredentials() {
-		if (mediafire.hasSavedCredentials()) {
-			et_email.setText(mediafire.getEmail());
-			et_password.setText(mediafire.getPassword());
-			autoLogin();
-		} else {
+		ArrayList<Credential> credentials = mediafire.getCredentials();
+		if (credentials.isEmpty()) {
 			if (mediafire.isEmptyDb()) {
 				findViewById(R.id.login_offline).setVisibility(View.GONE);
 			} else {
-				findViewById(R.id.login_offline).setVisibility(View.VISIBLE);
+				// findViewById(R.id.login_offline).setVisibility(View.VISIBLE);
 			}
+		} else if (credentials.size() == 1 && mediafire.isAutoLogin()) {
+			Iterator<Credential> it = credentials.iterator();
+			Credential c = it.next();
+			mediafire.setEmail(c.getUsername());
+			mediafire.setPassword(c.getPassword());
+			autoLogin();
+		} else {
+
 		}
 	}
 

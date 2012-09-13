@@ -13,5 +13,6 @@ public interface PrefConstants {
 	String PREF_KEY_PASSWORD = "passwordPref";
 	String PREF_KEY_SESSION_TOKEN = "sessionTokenPref";
 	String PREF_KEY_SESSION_TOKEN_TIME = "sessionTokenTimePref";
+	String PREF_KEY_CREDENTIALS = "credentialsPref";
 
 }

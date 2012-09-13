@@ -44,8 +44,7 @@ public abstract class BaseActivity extends Activity {
 			break;
 		case R.id.menu_logout:
 			MyLog.d(TAG, "Calling menu Logout");
-			mediafire.removePref(Mediafire.PREF_KEY_EMAIL);
-			mediafire.removePref(Mediafire.PREF_KEY_PASSWORD);
+			mediafire.setAutoLogin(false);
 			mediafire.removePref(Mediafire.PREF_KEY_SESSION_TOKEN);
 			mediafire.removePref(Mediafire.PREF_KEY_SESSION_TOKEN_TIME);
 			mediafire.setEmail(null);
